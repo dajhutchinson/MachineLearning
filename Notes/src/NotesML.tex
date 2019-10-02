@@ -1,0 +1,150 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=1in, paperwidth=8.3in, paperheight=11.7in]{geometry}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb} 
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\begin{document}
+
+\pagestyle{fancy}
+\setlength\parindent{0pt}
+\allowdisplaybreaks
+
+\renewcommand{\headrulewidth}{0pt}
+
+% Cover page title
+\title{Machine Learning - Notes}
+\author{Dom Hutchinson}
+\date{\today}
+\maketitle
+
+% Header
+\fancyhead[L]{Dom Hutchinson}
+\fancyhead[C]{Machine Learning - Notes}
+\fancyhead[R]{\today}
+
+% Counters
+\newcounter{definition}[section]
+\newcounter{example}[section]
+\newcounter{notation}[section]
+\newcounter{remark}[section]
+\newcounter{theorem}[section]
+
+% commands
+\newcommand{\dotprod}[0]{\boldsymbol{\cdot}}
+\newcommand{\cosech}[0]{\mathrm{cosech}\ }
+\newcommand{\cosec}[0]{\mathrm{cosec}\ }
+\newcommand{\sech}[0]{\mathrm{sech}\ }
+\newcommand{\blocks}[0]{\mathbb{B}}
+\newcommand{\nats}[0]{\mathbb{N}}
+\newcommand{\real}[0]{\mathbb{R}}
+\newcommand{\eg}[0]{\textit{e.g.} }
+\newcommand{\ie}[0]{\textit{i.e.} }
+\newcommand{\integers}[0]{\mathbb{Z}}
+\newcommand{\nb}[0]{\textit{N.B.} }
+\newcommand{\prob}[0]{\mathbb{P}}
+\newcommand{\expect}[0]{\mathbb{E}}
+\newcommand{\var}[0]{\mathrm{var}}
+\newcommand{\cov}[0]{\mathrm{cov}}
+
+\newcommand{\definition}[1]{\stepcounter{definition} \textbf{Definition \arabic{section}.\arabic{definition}\ - }\textit{#1}\\}
+\newcommand{\example}[1]{\stepcounter{example} \textbf{Example \arabic{section}.\arabic{example}\ - }\textit{#1}\\}
+\newcommand{\notation}[1]{\stepcounter{notation} \textbf{Notation \arabic{section}.\arabic{notation}\ - }\textit{#1}\\}
+\newcommand{\remark}[1]{\stepcounter{remark} \textbf{Remark \arabic{section}.\arabic{remark}\ - }\textit{#1}\\}
+\newcommand{\theorem}[1]{\stepcounter{theorem} \textbf{Theorem \arabic{section}.\arabic{theorem}\ - }\textit{#1}\\}
+
+% Table of contents
+\tableofcontents
+\section*{General}
+Lecturer - \href{carlhenrik.ek@bristol.ac.uk}{Carl Henrik Ek}\\
+Course Website - \url{http://carlhenrik.com/COMS30007/}\\
+Course Repo - \url{https://github.com/carlhenrikek/COMS30007}\\
+Course Subreddit - \url{https://www.reddit.com/r/coms30007/}
+
+% Start of content
+\newpage
+
+\section{Introduction}
+
+\definition{Deductive Reasoning}
+A method of reasoning in which the premieses are viewed as supplying \underline{all} the evidence for the truth of the conclusion.\\
+
+\definition{Inductive Reasoning}
+A method of reasoning in which the premieses are viewed as supplying \underline{some} evidence for the truth of the conclusion, rather than all the evidence. This allows for the conclusion of the \textit{Inductive Reasoning} to be false.\\
+
+\remark{Free-Lunch Theorem}
+There are infinite number of hypotheses that perfectly explain the data. Adding a data point removes an infinite number of possibilities, but still leaves infinite possibilities.\\
+
+\remark{The Task of Machine Learning}
+When proposing to use machine learning on a task, one should consider the following questions:
+\begin{enumerate}[label=\roman*)]
+	\item How can we formulate beliefes ad assumptions mathematically?
+	\item How can we connect our assumptions with data?
+	\item How can we update our beliefs?
+\end{enumerate}
+
+\subsection{Probability Theory}
+
+\definition{Stochastic/Random Variable}
+A variable whose value depends on outcomes of random phenomona.\\
+\eg $x\sim\mathcal{N}(0,1)$.\\
+
+\definition{Probability Measure,$\prob$}
+A function with signature $\prob:\mathcal{F}\to[0,1]$, where $\mathcal{F}$ is a sample space of rv $X$, and fulfils $\int_{-\infty}^{\infty}\prob(x)dx=1$.\\
+
+\definition{Joint Probability Distribution}
+A \textit{Probability Measure} for multiple variables, $\prob:X\times Y\to[0,1]$.\\
+Let $n_{ij}$ be the number of outcomes where $X=x_i$ and $Y=y_j$ then
+$$\prob(X=x_i,Y=y_j)=\frac{n_{ij}}{\sum_{i,j}n_{ij}}$$
+
+\definition{Marginal Probability Distribution}
+A \textit{Probability Measure} for one variable when the sample space is over multiple variables.\\
+Let $n_{ij}$ be the number of outcomes where $X=x_i$ and $Y=y_j$ then
+$$\prob(X=x_i)=\frac{\sum_jn_{ij}}{\sum_{i,j}n_{ij}}$$
+
+\definition{Conditional Probability Distribution}
+A \textit{Probability Measure} for a variable, given another variable has a defined value.
+Let $n_{ij}$ be the number of outcomes where $X=x_i$ and $Y=y_j$ then
+$$\prob(Y=y_j|X=x_i)=\frac{n_{ij}}{\sum_{j}n_{ij}}$$
+
+\theorem{Product Rule}
+For random variables $X$ \& $Y$
+$$\prob(X=x_i,Y=Y_j)=\prob(Y=y_j|X=x_i)\prob(X=x_i)$$
+
+\theorem{Sum Rule}
+For random variables $X$ \& $Y$
+$$\prob(X=x)=\sum_j\prob(X=x,Y=y_j)$$
+
+\theorem{Baye's Theorem}
+For random variables $X$ \& $Y$
+$$\prob(X=x_i|Y=y_j)=\frac{\prob(Y=y_j|X=x_i)\prob(X=x_i)}{\prob(Y=y_j)}$$
+
+\definition{Expectaction Value, $\expect$}
+The mean value a random variable will produce from a large number of samples.\\
+\begin{tabular}{l|l}
+Continuous&Discrete\\\hline
+$\expect(X)=\int_{-\infty}^{\infty} x\prob(X)dx$&$\expect(X)=\sum_{-\infty}^{\infty} x\prob(X)dx$\\
+$\expect(f(X))=\int_{-\infty}^{\infty} f(x)\prob(X)dx$&$\expect(f(X))=\sum_{-\infty}^{\infty} f(x)\prob(X)dx$
+\end{tabular}
+
+\definition{Variance}
+Describes the amount of spread in the values a single random variable will produce.
+$$\var(X)=\expect\left(x-\expect(x))^2\right)=\expect(X^2)-\bigg(\expect(X)\bigg)^2$$
+
+\definition{Covariance}
+Describes the joint variability between two random variables.
+$$\cov(X,Y)=\expect\bigg(\big(X-\expect(X)\big)\big(Y-\expect(Y)\big)\bigg)$$
+
+\definition{Marginalisation}
+The process of summing out the probability of one random variable using its joing probability with another rando variable.
+\[\begin{array}{rrcl}
+\mathrm{Continuous}&\prob(X=x)&=&\int(X=x,Y=y)dy\\
+\mathrm{Discrete}&\prob(X=x)&=&\sum_i\prob(X=x,Y=y_i)
+\end{array}\]
+
+\end{document}
