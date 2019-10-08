@@ -35,6 +35,7 @@
 \newcounter{notation}[section]
 \newcounter{remark}[section]
 \newcounter{theorem}[section]
+\newcounter{proof}[section]
 
 % commands
 \newcommand{\dotprod}[0]{\boldsymbol{\cdot}}
@@ -53,11 +54,16 @@
 \newcommand{\var}[0]{\mathrm{var}}
 \newcommand{\cov}[0]{\mathrm{cov}}
 
+\newcommand{\x}[0]{\textbf{x}}
+\newcommand{\X}[0]{\textbf{X}}
+\newcommand{\mub}[0]{\pmb{\mu}}
+
 \newcommand{\definition}[1]{\stepcounter{definition} \textbf{Definition \arabic{section}.\arabic{definition}\ - }\textit{#1}\\}
 \newcommand{\example}[1]{\stepcounter{example} \textbf{Example \arabic{section}.\arabic{example}\ - }\textit{#1}\\}
 \newcommand{\notation}[1]{\stepcounter{notation} \textbf{Notation \arabic{section}.\arabic{notation}\ - }\textit{#1}\\}
 \newcommand{\remark}[1]{\stepcounter{remark} \textbf{Remark \arabic{section}.\arabic{remark}\ - }\textit{#1}\\}
 \newcommand{\theorem}[1]{\stepcounter{theorem} \textbf{Theorem \arabic{section}.\arabic{theorem}\ - }\textit{#1}\\}
+\newcommand{\proof}[1]{\stepcounter{proof} \textbf{Proof \arabic{section}.\arabic{proof}\ - }\textit{#1}\\}
 
 % Table of contents
 \tableofcontents
@@ -172,19 +178,19 @@ The process of summing out the probability of one random variable using its join
 \end{array}\]
 
 \definition{Likelihood Function}
-Define $\textbf{X}\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and let $\textbf{x}$ be an observation of $\textbf{X}$.\\
-A \textit{Likelihood Function} is any function, $L(\cdot;\textbf{x}):\Theta\to[0,\infty)$, which is proportional to the PMF/PDF of the obeserved realisation $\textbf{x}$.
-$$L(\theta;\textbf{x}):=Cf_b(\textbf{x};\theta)\ \forall\ C>0$$
+Define $\X\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and let $\x$ be an observation of $\X$.\\
+A \textit{Likelihood Function} is any function, $L(\cdot;\x):\Theta\to[0,\infty)$, which is proportional to the PMF/PDF of the obeserved realisation $\x$.
+$$L(\theta;\x):=Cf_b(\x;\theta)\ \forall\ C>0$$
 \nb Sometimes this is called the \textit{Observed} Likelihood Function since it is dependent on observed data.\\
 
 \definition{Log-Likelihood Function}
-Let $\textbf{X}\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and $\textbf{x}$ be an observation of $\textbf{X}$.\\
+Let $\X\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and $\x$ be an observation of $\X$.\\
 The \textit{Log-Likelihood Function} is the natural log of a \textit{Likelihood Function}
-$$\ell(\theta;\textbf{x}):=\ln f_n(\textbf{x};\theta)+C,\ C\in\reals$$
+$$\ell(\theta;\x):=\ln f_n(\x;\theta)+C,\ C\in\reals$$
 
 \definition{Maximum Likelihood Estimation}
 The \textit{Maximum Likelihood Estimate} is an estimate for a parameter of a probability distribution which is the value which maximises the \textit{Likelihood Function} (or the \textit{Likelihood Function}).
-$$\hat{\theta}:=\text{argmax}_\theta L(\theta;\textbf{x})$$
+$$\hat{\theta}:=\text{argmax}_\theta L(\theta;\x)$$
 
 \definition{Central Limit Theorem}
 The distribution of the sum (or mean) of a large number of independent, identically distributied random variables can be approximated to a normal distribution, regardless of the distributions of the random variables.
@@ -225,18 +231,164 @@ $$f_X(x):=\dfrac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)\times\dots\times\Gamma(\alph
 
 \definition{Exponential Distribution Family}
 The \textit{Exponential Distribution Family} is a set of probability distributions which fit the form.
-$$\prob(\textbf{x}|\pmb{\theta})=h(\textbf{x})g(\pmb{\theta})e^{\pmb{\theta}^T\textbf{u}(\textbf{x})}$$
+$$\prob(\x|\pmb{\theta})=h(\x)g(\pmb{\theta})e^{\pmb{\theta}^T\textbf{u}(\x)}$$
 With conjugate prior
 $$\prob(\pmb{\theta}|\pmb{\chi},\nu)=f(\pmb{\chi},\nu)g(\pmb{\chi})^\nu e^{\nu\pmb{\theta}^T\pmb{\chi}}$$
 
 \definition{Multivariate Normal Distribution}
-Let $\textbf{X}\sim\mathcal{N}(\pmb{\mu},\pmb{\Sigma})$. Then
-$$f_\textbf{X}(\textbf{x})=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\textbf{x}-\pmb{\mu})^T\pmb{\Sigma}^{-1}(\textbf{x}-\pmb{\mu})}$$
+Let $\X\sim\mathcal{N}(\mub,\pmb{\Sigma})$. Then
+$$f_\X(\x)=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\x-\mub)^T\pmb{\Sigma}^{-1}(\x-\mub)}$$
 \nb Also known as \textit{Gaussian Distribution}.\\
 
 \remark{Conjugate Prior for Normal Distribution}
-For a \textit{Normal Distribution} the conjugate prior of $\pmb{\mu}$ is \textit{Gaussian} and the conjugate prior of $\pmb{\Sigma}$ is \textit{Inverse-Wishard}.\\
+For a \textit{Normal Distribution} the conjugate prior of $\mub$ is \textit{Gaussian} and the conjugate prior of $\pmb{\Sigma}$ is \textit{Inverse-Wishard}.\\
 
 %TODO - Study conjugacy
+
+\newpage
+\setcounter{section}{-1}
+\section{Appendix}
+
+\proof{Deriving Gaussian Marginal Distribution}
+\textit{NOTE - This is dense as fuck \& uses quite a bit of bullshit}.\\
+\\Let $\X\sim\mathcal{N}\left(\begin{pmatrix}
+\mub_1\\\mub_2
+\end{pmatrix},\begin{pmatrix}
+\Lambda_{11}&\Lambda_{12}\\
+\Lambda_{21}&\Lambda_{22}
+\end{pmatrix}^{-1}\right)$.\\
+$\mub_1,\mub_2$ can be considered as two parts of the mean vector $\mub$.\\
+Let $\x$ be a realisation of $\X$ where $\x:=(\x_1,\x_2)$ with $\x_1\ \&\ \x_2$ representing the same partition as $\mub_1\ \&\ \mub_2$ respecitvely.\\
+Define $D:=\mathrm{dim}(\x),\ D_1:=\mathrm{dim}(\x_1)\ \&\ D_2:=\mathrm{dim}(\x_2)$.\\
+\\Here we want to get from $\prob(\x_1,\x_2)$ to $\prob(\x_1)$.\\
+Consider the exponent of the joint distribution
+$$E=-\frac{1}{2}(\x_1-\mub_1)^T\Lambda_11(\x_1-\mub_1)-\frac{1}{2}(\x_1-\mub_1)^T\Lambda_{12}(\x_2-\mub_2)-\frac{1}{2}(\x_2-\mub_2)^T\Lambda_{21}(\x_1-\mub_1)-\frac{1}{2}(\x_2-\mub_2)^T\Lambda_{22}(\x_2-\mub_2)$$
+To produce the marginal for $x_1$ we want to isolate the terms involving $x_2$ so they are easy to remove.
+\[\begin{array}{rcl}
+E&=&-\frac{1}{2}\bigg[\left(\x_2^T\Lambda_{22}\x_2-2\x_2^T\Lambda_22(\mub_2-\Lambda_{22}^{-1}\Lambda_{21}(\x_1-\mub_1))\right)\\
+&-&2\x_1^T\Lambda_{12}\mub_2+2\mub_1^T\Lambda_{12}\mub_2+\mub_2^T\Lambda_{22}\mub_2+\x_1^T\Lambda_{11}\x_1\\
+&-&2\x_1^T\Lambda_11\mub_1+\mub_1^T\Lambda_{11}\mub_1\bigg]\\
+&=&\underbrace{-\frac{1}{2}\left(\x_2-(\mub_2-\Lambda_{22}^{-1}\Lambda_{21}(\x_1-\mub_1))\right)^T\Lambda_{22}\left(\x_2-(\mub_2-\Lambda_{22}^{-1}\Lambda_{21}(\x_1-\mub_1))\right)}_{E_1}\\
+&+&\underbrace{\frac{1}{2}\left(\x_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\x_1-2\x_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\mub_1+\mub_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\mub_1\right)}_{A}\\
+&-&\underbrace{\frac{1}{2}\left(\x_1^T\Lambda_11\x_1-2\x_1^T\Lambda_{11}\mub_1+\mub_{1}\Lambda_{11}\mub_1\right)}_{B}
+\end{array}\]
+Note that $A$ \& $B$ do not contain any $x_2$ terms.\\
+Since the co-variance matrix is symmetric we have $\Lambda_{12}=\Lambda_{21}^T$ we have
+$$\x_1^T\Lambda_{12}\mub_2=\x_1^T\Lambda_{21}^T\mub_2=(\Lambda_{21}\x_1)^T\mub_2=\mub_2^T\Lambda_{21}\x_1$$
+We shall not rewrite $A$ \& $B$ as quadratic expressions
+\[\begin{array}{rrcl}
+&A&=&\dfrac{1}{2}\left(\x_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\x_1-2\x_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\mub_1+\mub_1^T\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}\mub_1\right)\\
+&&=&\dfrac{1}{2}(\x_1-\mub_1)^T(\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21})(\x_1-\mub_1)\\
+&B&=&\dfrac{1}{2}\left(\x_1^T\Lambda_{11}\x_1-2\x_1^T\Lambda_{11}\mub_1+\mub_{1}\Lambda_{11}\mub_1\right)\\
+&&=&\dfrac{1}{2}(\x_1-\mub_1)^T\Lambda_{11}(\x_1-\mub_1)\\
+\implies&A-B&=&\frac{1}{2}(\x_1-\mub_1)^T(\Lambda_{12}\Lambda_{22}^{-1}\Lambda_{21}-\Lambda_{11})(\x_1-\mub_1)\\
+&\mathrm{Let\ }E_2&:=&A-B
+\end{array}\]
+Now the exponent has been orgainised we can consider the whole gaussian expression.
+\[\begin{array}{rcll}
+\prob(\x_1,\x_2)&=&\dfrac{e^{E_1}e^{E_2}}{(2\pi)^{\frac{D}{2}}|\Sigma|^{\frac{1}{2}}}\\
+\prob(\x_1)&=&{\displaystyle\int\prob(\x_1,\x_2)d\x_2}\\
+&=&{\displaystyle\int\dfrac{e^{E_1}e^{E_2}}{(2\pi)^{\frac{D}{2}}|\Sigma|^{\frac{1}{2}}}d\x_2}\\
+&=&{\dfrac{e^{E_2}}{(2\pi)^{\frac{D}{2}}|\Sigma|^{\frac{1}{2}}}\displaystyle\int e^{E_1}d\x_2}&\text{Since $E_2$ is independent of $\x_2$}
+\end{array}\]
+Now we consider $\int e^{E_1}d\x_2$.\\
+Since we know a gaussian must intergrate to 1 over the whole domain we deduce that
+\[\begin{array}{rrcl}
+&{\displaystyle\int\dfrac{1}{(2\pi)^{\frac{D_2}{2}}|\Lambda_{22}^{-1}|^{\frac{1}{2}}}e^{E_1}d_{\x_2}}&=&1\\\
+\implies&\int e^{E_1}d\x_2&=&(2\pi)^{\frac{D_2}{2}}|\Lambda_{22}^{-1}|^{\frac{1}{2}}
+\end{array}\]
+\nb $\Lambda_{22}^{-1}$ is the variance of $\x_2$.\\
+Using the result of this intergal we have
+\[\begin{array}{rcl}
+\prob(\x_1)&=&(2\pi)^{\frac{D_2}{2}}|\Lambda_{22}^{-1}|^{\frac{1}{2}}\dfrac{1}{(2\pi)^{\frac{D}{2}}|\Sigma|^{\frac{1}{2}}}e^{E_2}\\
+&=&\dfrac{e^{E_2}}{(2\pi)^{\frac{D-D_2}{2}}|\Lambda_{22}^{-1}|^{-\frac{1}{2}}|\Sigma|^{\frac{1}{2}}}
+\end{array}\]
+The Schur complement of $\Lambda_{22}$ is $\Lambda^{-1}_{22}=\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12}$.\\
+Thus \[\begin{array}{rcl}
+|\Lambda_{22}^{-1}|^{-\frac{1}{2}}|\Sigma|^{\frac{1}{2}}&=&|\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12}|^{-\frac{1}{2}}|\Sigma_{11}|^{\frac{1}{2}}|\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12}|^{\frac{1}{2}}\\
+&=&|\Sigma_{11}|^{\frac{1}{2}}
+\end{array}\]
+Now we have a full expression
+\[\begin{array}{rcl}
+\prob(\x_1)&=&\dfrac{e^{E_2}}{(2\pi)^{\frac{D-D_2}{2}}|\Lambda_{22}^{-1}|^{-\frac{1}{2}}|\Sigma|^{\frac{1}{2}}}\\
+&=&\dfrac{1}{(2\pi)^{\frac{D_1}{2}}|\Sigma_{11}|^{\frac{1}{2}}}e^{-\frac{1}{2}(\x_1-\mub_1)^T\Sigma_{11}^{-1}(\x_1-\mub_1)}
+\end{array}\]
+$\hfill{\blacksquare}$
+
+\proof{Deriving Gaussian Conditional Distribution}
+\\Let $\X\sim\mathcal{N}\left(\begin{pmatrix}
+\mub_1\\\mub_2
+\end{pmatrix},\begin{pmatrix}
+\Sigma_{11}&\Sigma_{12}\\
+\Sigma_{21}&\Sigma_{22}
+\end{pmatrix}\right)$.\\
+$\mub_1,\mub_2$ can be considered as two parts of the mean vector $\mub$.\\
+Let $\x$ be a realisation of $\X$ where $\x:=(\x_1,\x_2)$ with $\x_1\ \&\ \x_2$ representing the same partition as $\mub_1\ \&\ \mub_2$ respecitvely.\\
+Define $D:=\mathrm{dim}(\x)$.\\
+\\We want to find the distribution of $\prob(\x_1|\x_2)$.\\
+From the product rule we know that $\prob(\x_1,\x_2)=\prob(\x_1|\x_2)\prob(\x_2)$ and we already know the joint \& marginal distributions for a gaussian.\\
+We have that
+$$
+\prob(\x_1,\x_2)\propto e^{-\frac{1}{2}\begin{pmatrix}
+\x_1-\mub_1\\\x_2-\mub_2
+\end{pmatrix}^T\begin{pmatrix}
+\Sigma_{11}&\Sigma_{12}\\
+\Sigma_{21}&\Sigma_{22}
+\end{pmatrix}^{-1}\begin{pmatrix}
+\x_1-\mub_1\\\x_2-\mub_2
+\end{pmatrix}}$$
+We now want to factor the marginal distribution out of this expression.
+$$
+\prob(\x_2)\propto e^{-\frac{1}{2}(\x_2-\mub_2)^T\Sigma_{22}^{-1}(\x_2-\mub_2)}
+$$
+Lets look at the exponent of the joint distribution.\\
+\nb About to use a lot of Schur Complements
+\[\begin{array}{rl}
+E&=-\dfrac{1}{2}\begin{pmatrix}
+\x_1-\mub_1\\\x_2-\mub_2
+\end{pmatrix}^T\begin{pmatrix}
+\Sigma_{11}&\Sigma_{12}\\
+\Sigma_{21}&\Sigma_{22}
+\end{pmatrix}^{-1}\begin{pmatrix}
+\x_1-\mub_1\\\x_2-\mub_2
+\end{pmatrix}\\
+&=-\dfrac{1}{2}\begin{pmatrix}
+\x_1-\mub_1\\
+\x_2-\mub_2
+\end{pmatrix}^T
+\begin{pmatrix}
+I&0\\
+\Sigma_{22}^{-1}\Sigma_{21}&I
+\end{pmatrix}^T
+\begin{pmatrix}
+(\Sigma/\Sigma_{22})^{-1}&0\\
+0&\Sigma_{22}^{-1}
+\end{pmatrix}
+\begin{pmatrix}
+I&-\Sigma_{12}\Sigma_{22}^{-1}\\
+0&I
+\end{pmatrix}
+\begin{pmatrix}
+\x_1-\mub_1\\
+\x_2-\mub_2
+\end{pmatrix}\\
+&=-\dfrac{1}{2}\begin{pmatrix}
+\x_1-\mub_1\\
+\x_2-\mub_2
+\end{pmatrix}^T
+\begin{pmatrix}
+(\Sigma/\Sigma_{22})^{-1}&-(\Sigma/\Sigma_{22})^{-1}\Sigma_{12}\Sigma_{22}^{-1}\\
+-\Sigma_{21}\Sigma_{22}^{-1}(\Sigma/\Sigma_{22})^{-1}&\Sigma_{22}^{-1}
+\end{pmatrix}^{-1}
+\begin{pmatrix}
+\x_1-\mub_1\\
+\x_2-\mub_2
+\end{pmatrix}\\
+&=-\dfrac{1}{2}\bigg[\x_1-(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))\bigg]^T(\Sigma/\Sigma_{22})^{-1}\bigg[\x_1-(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))\bigg]\\
+&\underbrace{-\dfrac{1}{2}(\x_2-\mub_2)^T\Sigma_{22}^{-1}(\x_2-\mub_2)}_{E_2}
+\end{array}\]
+Note that $E_2$ is exactly the exponent for the marginal distribution of $\x_2$ and thus what we want to factory out in order to get to the conditional distribution.
+$$\prob(\x_1|\x_2)\propto e^{-\dfrac{1}{2}\big[\x_1-\underbrace{(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))}_{\text{mean}}\big]^T(\underbrace{\Sigma/\Sigma_{22}}_{\text{covariance}})^{-1}\big[\x_1-(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))\big]}$$
+$\hfill{\blacksquare}$
 
 \end{document}
