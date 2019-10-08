@@ -7,6 +7,7 @@
 \usepackage{enumerate}
 \usepackage{enumitem}
 \usepackage{fancyhdr}
+\usepackage{graphicx}
 \usepackage{hyperref}
 
 \begin{document}
@@ -42,7 +43,7 @@
 \newcommand{\sech}[0]{\mathrm{sech}\ }
 \newcommand{\blocks}[0]{\mathbb{B}}
 \newcommand{\nats}[0]{\mathbb{N}}
-\newcommand{\real}[0]{\mathbb{R}}
+\newcommand{\reals}[0]{\mathbb{R}}
 \newcommand{\eg}[0]{\textit{e.g.} }
 \newcommand{\ie}[0]{\textit{i.e.} }
 \newcommand{\integers}[0]{\mathbb{Z}}
@@ -71,6 +72,8 @@ Course Subreddit - \url{https://www.reddit.com/r/coms30007/}
 
 \section{Introduction}
 
+\subsection{Motivation}
+
 \definition{Deductive Reasoning}
 A method of reasoning in which the premieses are viewed as supplying \underline{all} the evidence for the truth of the conclusion.\\
 
@@ -87,6 +90,9 @@ When proposing to use machine learning on a task, one should consider the follow
 	\item How can we connect our assumptions with data?
 	\item How can we update our beliefs?
 \end{enumerate}
+
+\remark{Useful Models are not always True}
+Our goal is to understand realisations of a system. If we can then we can equate our model to the system. It is important to note thtat our model does not need to be perfectly true to be useful.
 
 \subsection{Probability Theory}
 
@@ -112,9 +118,13 @@ A \textit{Probability Measure} for a variable, given another variable has a defi
 Let $n_{ij}$ be the number of outcomes where $X=x_i$ and $Y=y_j$ then
 $$\prob(Y=y_j|X=x_i)=\frac{n_{ij}}{\sum_{j}n_{ij}}$$
 
+\example{Joint, Marginal \& Conditional Probability}
+The below image shows two marginals distributions in the bottom-left, $X$, \& top-right, $Y$, their joint distribution in the top-left and a conditional in the bottom right $\prob(Y|X=1)$.\\
+\includegraphics[scale=2]{img/probExamples.png}
+
 \theorem{Product Rule}
 For random variables $X$ \& $Y$
-$$\prob(X=x_i,Y=Y_j)=\prob(Y=y_j|X=x_i)\prob(X=x_i)$$
+$$\prob(X=x,Y=Y)=\prob(Y=y|X=x)\prob(X=x)$$
 
 \theorem{Sum Rule}
 For random variables $X$ \& $Y$
@@ -122,7 +132,21 @@ $$\prob(X=x)=\sum_j\prob(X=x,Y=y_j)$$
 
 \theorem{Baye's Theorem}
 For random variables $X$ \& $Y$
-$$\prob(X=x_i|Y=y_j)=\frac{\prob(Y=y_j|X=x_i)\prob(X=x_i)}{\prob(Y=y_j)}$$
+$$\prob(X=x|Y=y)=\frac{\prob(Y=y|X=x)\prob(X=x)}{\prob(Y=y)}$$
+
+\definition{Elements of Bayes' Theorem}
+The elements of \textit{Bayes' Theory} can be broken down to explain parts of the model.
+$$\underbrace{\prob(\theta|Y)}_{\text{Posterior}}=\frac{\overbrace{\prob(Y|\theta)}^{\text{Likelihood}}\overbrace{\prob(\theta)}^{\text{Prior}}}{\underbrace{\prob(Y)}_{\text{Evidence}}}$$
+\begin{tabular}{l|l}
+Posterior&Which parameters of the model do I belive produce distributions have generated the data $Y$\\
+Likelihood&How likley is the data to come from the model specifely indexed by $\theta$\\
+Prior&What distribution do I think parameter $\theta$ has\\
+Evidence&How likely do I think data $Y$ is for all models.
+\end{tabular}
+\nb The \textit{Evidence} normalises this function.\\
+
+\definition{Conjugate Prior}
+If the \textit{Prior} is the same probability distribution family as the \textit{Posterior} then the \textit{Prior} is called a \textit{Conjugate Prior}.\\
 
 \definition{Expectaction Value, $\expect$}
 The mean value a random variable will produce from a large number of samples.\\
@@ -130,7 +154,7 @@ The mean value a random variable will produce from a large number of samples.\\
 Continuous&Discrete\\\hline
 $\expect(X)=\int_{-\infty}^{\infty} x\prob(X)dx$&$\expect(X)=\sum_{-\infty}^{\infty} x\prob(X)dx$\\
 $\expect(f(X))=\int_{-\infty}^{\infty} f(x)\prob(X)dx$&$\expect(f(X))=\sum_{-\infty}^{\infty} f(x)\prob(X)dx$
-\end{tabular}
+\end{tabular}\\
 
 \definition{Variance}
 Describes the amount of spread in the values a single random variable will produce.
@@ -146,5 +170,73 @@ The process of summing out the probability of one random variable using its join
 \mathrm{Continuous}&\prob(X=x)&=&\int(X=x,Y=y)dy\\
 \mathrm{Discrete}&\prob(X=x)&=&\sum_i\prob(X=x,Y=y_i)
 \end{array}\]
+
+\definition{Likelihood Function}
+Define $\textbf{X}\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and let $\textbf{x}$ be an observation of $\textbf{X}$.\\
+A \textit{Likelihood Function} is any function, $L(\cdot;\textbf{x}):\Theta\to[0,\infty)$, which is proportional to the PMF/PDF of the obeserved realisation $\textbf{x}$.
+$$L(\theta;\textbf{x}):=Cf_b(\textbf{x};\theta)\ \forall\ C>0$$
+\nb Sometimes this is called the \textit{Observed} Likelihood Function since it is dependent on observed data.\\
+
+\definition{Log-Likelihood Function}
+Let $\textbf{X}\sim f_n(\cdot;\theta^*)$ for some unknown $\theta^*\in\Theta$ and $\textbf{x}$ be an observation of $\textbf{X}$.\\
+The \textit{Log-Likelihood Function} is the natural log of a \textit{Likelihood Function}
+$$\ell(\theta;\textbf{x}):=\ln f_n(\textbf{x};\theta)+C,\ C\in\reals$$
+
+\definition{Maximum Likelihood Estimation}
+The \textit{Maximum Likelihood Estimate} is an estimate for a parameter of a probability distribution which is the value which maximises the \textit{Likelihood Function} (or the \textit{Likelihood Function}).
+$$\hat{\theta}:=\text{argmax}_\theta L(\theta;\textbf{x})$$
+
+\definition{Central Limit Theorem}
+The distribution of the sum (or mean) of a large number of independent, identically distributied random variables can be approximated to a normal distribution, regardless of the distributions of the random variables.
+
+\section{Distributions}
+
+\definition{Bernoulli Distribution}
+Models an event with a binary outcome (0 or 1) with parameter $p$ st $\prob(X=1)=p$
+Let $X\sim\text{Bernoulli}(p)$. Then
+\[\begin{array}{rcl}
+f_X(x)&=&\begin{cases}
+p&, x=1\\
+1-p&, x=0\\
+0&\text{otherwise}
+\end{cases}\\
+F_X(x)&=&\begin{cases}
+0&,x<0\\
+1-p&0\leq x<1\\
+1&x\geq1
+\end{cases}\\
+\expect(X)&=&p\\
+\text{Var}(X)&=&p(1-p)
+\end{array}\]
+
+\definition{$\beta$-Distribution}
+A \textit{$\beta$-Distribution} is a continuous distribution over interval $[0,1]$ which is parameterised by two positive \textit{shape parameters}, $\alpha\ \&\ \beta$. A \textit{$\beta$-Distribution} can be used to encode assumptions as a \textit{Prior}.\\
+Let $X\sim\beta(\alpha,\beta)$. Then
+\[\begin{array}{rcl}
+f_X(x)&=&\dfrac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)+\Gamma(\beta)}x^{\alpha-1}(1-x)^{\beta-1}
+\end{array}\]
+
+\example{$\beta$-Distribution}
+\includegraphics[scale=.6]{img/betaExamples.png}
+
+\definition{Direchlet Distribution}
+Let $X\sim\text{Dir}(\pmb{\alpha})$. Then
+$$f_X(x):=\dfrac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)\times\dots\times\Gamma(\alpha_N)}\prod_{i=1}^Nx_i^{\alpha_{i-1}}$$
+
+\definition{Exponential Distribution Family}
+The \textit{Exponential Distribution Family} is a set of probability distributions which fit the form.
+$$\prob(\textbf{x}|\pmb{\theta})=h(\textbf{x})g(\pmb{\theta})e^{\pmb{\theta}^T\textbf{u}(\textbf{x})}$$
+With conjugate prior
+$$\prob(\pmb{\theta}|\pmb{\chi},\nu)=f(\pmb{\chi},\nu)g(\pmb{\chi})^\nu e^{\nu\pmb{\theta}^T\pmb{\chi}}$$
+
+\definition{Multivariate Normal Distribution}
+Let $\textbf{X}\sim\mathcal{N}(\pmb{\mu},\pmb{\Sigma})$. Then
+$$f_\textbf{X}(\textbf{x})=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\textbf{x}-\pmb{\mu})^T\pmb{\Sigma}^{-1}(\textbf{x}-\pmb{\mu})}$$
+\nb Also known as \textit{Gaussian Distribution}.\\
+
+\remark{Conjugate Prior for Normal Distribution}
+For a \textit{Normal Distribution} the conjugate prior of $\pmb{\mu}$ is \textit{Gaussian} and the conjugate prior of $\pmb{\Sigma}$ is \textit{Inverse-Wishard}.\\
+
+%TODO - Study conjugacy
 
 \end{document}
