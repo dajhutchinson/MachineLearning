@@ -36,6 +36,7 @@
 \newcounter{remark}[section]
 \newcounter{theorem}[section]
 \newcounter{proof}[section]
+\newcounter{proposition}[section]
 
 % commands
 \newcommand{\dotprod}[0]{\boldsymbol{\cdot}}
@@ -59,11 +60,19 @@
 \newcommand{\mub}[0]{\pmb{\mu}}
 
 \newcommand{\definition}[1]{\stepcounter{definition} \textbf{Definition \arabic{section}.\arabic{definition}\ - }\textit{#1}\\}
-\newcommand{\example}[1]{\stepcounter{example} \textbf{Example \arabic{section}.\arabic{example}\ - }\textit{#1}\\}
-\newcommand{\notation}[1]{\stepcounter{notation} \textbf{Notation \arabic{section}.\arabic{notation}\ - }\textit{#1}\\}
-\newcommand{\remark}[1]{\stepcounter{remark} \textbf{Remark \arabic{section}.\arabic{remark}\ - }\textit{#1}\\}
-\newcommand{\theorem}[1]{\stepcounter{theorem} \textbf{Theorem \arabic{section}.\arabic{theorem}\ - }\textit{#1}\\}
+\newcommand{\definitionn}[1]{\stepcounter{definition} \textbf{Definition \arabic{section}.\arabic{definition}\ - }\textit{#1}}
 \newcommand{\proof}[1]{\stepcounter{proof} \textbf{Proof \arabic{section}.\arabic{proof}\ - }\textit{#1}\\}
+\newcommand{\prooff}[1]{\stepcounter{proof} \textbf{Proof \arabic{section}.\arabic{proof}\ - }\textit{#1}}
+\newcommand{\example}[1]{\stepcounter{example} \textbf{Example \arabic{section}.\arabic{example}\ - }\textit{#1}\\}
+\newcommand{\examplee}[1]{\stepcounter{example} \textbf{Example \arabic{section}.\arabic{example}\ - }\textit{#1}}
+\newcommand{\notation}[1]{\stepcounter{notation} \textbf{Notation \arabic{section}.\arabic{notation}\ - }\textit{#1}\\}
+\newcommand{\notationn}[1]{\stepcounter{notation} \textbf{Notation \arabic{section}.\arabic{notation}\ - }\textit{#1}}
+\newcommand{\proposition}[1]{\stepcounter{proposition} \textbf{Proposition \arabic{section}.\arabic{proposition}\ - }\textit{#1}\\}
+\newcommand{\propositionn}[1]{\stepcounter{proposition} \textbf{Proposition \arabic{section}.\arabic{proposition}\ - }\textit{#1}}
+\newcommand{\remark}[1]{\stepcounter{remark} \textbf{Remark \arabic{section}.\arabic{remark}\ - }\textit{#1}\\}
+\newcommand{\remarkk}[1]{\stepcounter{remark} \textbf{Remark \arabic{section}.\arabic{remark}\ - }\textit{#1}}
+\newcommand{\theorem}[1]{\stepcounter{theorem} \textbf{Theorem \arabic{section}.\arabic{theorem}\ - }\textit{#1}\\}
+\newcommand{\theoremm}[1]{\stepcounter{theorem} \textbf{Theorem \arabic{section}.\arabic{theorem}\ - }\textit{#1}}
 
 % Table of contents
 \tableofcontents
@@ -151,9 +160,6 @@ Evidence&How likely do I think data $Y$ is for all models.
 \end{tabular}
 \nb The \textit{Evidence} normalises this function.\\
 
-\definition{Conjugate Prior}
-If the \textit{Prior} is the same probability distribution family as the \textit{Posterior} then the \textit{Prior} is called a \textit{Conjugate Prior}.\\
-
 \definition{Expectaction Value, $\expect$}
 The mean value a random variable will produce from a large number of samples.\\
 \begin{tabular}{l|l}
@@ -194,6 +200,24 @@ $$\hat{\theta}:=\text{argmax}_\theta L(\theta;\x)$$
 
 \definition{Central Limit Theorem}
 The distribution of the sum (or mean) of a large number of independent, identically distributied random variables can be approximated to a normal distribution, regardless of the distributions of the random variables.
+
+\subsection{Conjugate Priors}
+
+\definition{Conjugate Prior}
+If we have a \textit{Likelihood Function}, $\prob(X|\theta)$, with a known distribution (\eg Normal) we can choose our \textit{Prior}, $\prob(\theta)$, to be from a distribution which is \textit{Conjugate} to the distribution of the \textit{Likelihood Function}.\\
+These are defined in \href{https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions}{\textit{tables}}\\
+
+\remark{Why use Conjugate Priors?}
+If we have a \textit{Conjugate Prior} then the \textit{Posterior}, $\prob(\theta|X)$, will be in the same distribution family as the \text{Prior} too. We can then work out the distribution of the \textit{Posterior} by passing the parameters of the \textit{Prior} through pre-derived functions
+\[\begin{array}{rcl}
+\text{Posterior}&\propto&\text{Likelihood}\times\text{Prior}\\
+\prob(\theta|X)&\propto&\prob(X|\theta)\times\prob(\theta)
+\end{array}\]
+\nb - \url{https://en.wikipedia.org/wiki/Conjugate_prior#Table_of_conjugate_distributions}\\
+
+\example{Conjugate Priors}
+Consider a scenario where we are flipping a coin. We may have \textit{Likelihood Function} $\theta^x(1-\theta)^{n-x}$. If we choose our \textit{Prior} to be $\theta^{a-1}(1-\theta)^{b-1}$ which is a \textit{Beta Distribution}.\\
+Then (after some maths) we find the \textit{Posterior}
 
 \section{Distributions}
 
@@ -240,10 +264,172 @@ Let $\X\sim\mathcal{N}(\mub,\pmb{\Sigma})$. Then
 $$f_\X(\x)=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\x-\mub)^T\pmb{\Sigma}^{-1}(\x-\mub)}$$
 \nb Also known as \textit{Gaussian Distribution}.\\
 
-\remark{Conjugate Prior for Normal Distribution}
-For a \textit{Normal Distribution} the conjugate prior of $\mub$ is \textit{Gaussian} and the conjugate prior of $\pmb{\Sigma}$ is \textit{Inverse-Wishard}.\\
+\section{Regression}
 
-%TODO - Study conjugacy
+\subsection{Linear Regression}
+
+\definition{Linear Regression}
+\textit{Linear Regression} is the process of taking a set of data points \& producing a linear relationship between a dependent varaible \& one of more explanatory variables.\\
+Let $\x\in\reals^n$ be a set of observed values from $n$ explanatory variables \& $\textbf{a}\in\reals^n+1$ be a set of parameters. Then we predict the value of the dependent variable to be
+$$y(\x,\textbf{a})=a_0+\sum\limits_{i=0}^na_{i+1}x_i$$
+
+\remark{Limitation of Linear Regression}
+The formula defined in \textbf{Definition 3.1} is a linear function of the coefficients defined by $\textbf{a}$ \textbf{and} the observed values of $\x$ this limits the relationships we can model between elements of $\x$. The model can be extended to avoid this using \textit{Basis Functions}.\\
+
+\definition{Linear Regression - Basis Functions}
+We can extend \textit{Linear Regression} to include \textit{Basis Functions} so that relationships between explanatory variables can be modelled.\\
+Let $\x\in\reals^n$ be a set of observed values from explanatory variables, $\textbf{a}\in\reals^{m}$ be a set of coefficients (weightings), and $\pmb{\phi}:\reals^n\to\reals^{m-1}$ be a set of basis functions. Then we can predict the dependent variable to be
+$$y(\x,\textbf{a})=a_0+\sum_{i=1}^ma_i\phi_{i-1}(\x)$$
+
+\remark{Linear Regression - Basis Function}
+To simplfy the equation used in \textbf{Definition 3.2} we can define $\pmb{\phi}:\reals^n\to\reals^m$ with $\phi_0(\x)$. Then
+$$y(\x,\textbf{a})=\sum_{i=0}^ma_i\phi_i(\x)=\textbf{a}^T\pmb{\phi}(\x)$$
+
+\proposition{Noise}
+We will often introduce the concept of \textit{Noise} into a \textit{Linear Regression} model. Typically we assume noise to be modelled by a zero-mean Normal distribution with precision $\beta$, $\varepsilon\sim\text{Normal}(0,\beta^{-1})$, so
+$$t:=y(\x,\textbf{a})=\textbf{a}^T\pmb{\phi}(\x)+\varepsilon$$
+From this we can derive a likelihood
+$$\prob(t|\x,\textbf{a},\beta)\sim\text{Normal}(t|\mu=y(\x,\textbf{a}),\sigma^2=\beta^{-1})=\text{Normal}(t|\mu=\textbf{a}^T\pmb{\phi}(\x),\sigma^2=\beta^{-1})$$
+If we have a series of sets of observations, $\X\in\reals^{m\times n}$, then
+$$\prob(\textbf{t}|\X,\textbf{a},\beta)\sim\prod\limits_{i=1}^m\text{Normal}(t_i|\mu=\textbf{a}^T\pmb{\phi}(\x_i),\sigma^2=\beta^{-1})$$
+%TODO what is precision v variance in normal distribution
+
+\definition{Maximum Likelihood Estimate}
+A \textit{Maximum Likelihood Estimate} is estimating the value of a parameter to be the most likely, according to our \textit{Likelihood Function}.\\
+
+\remark{Finding Maximum Likelihood Estimate}
+Suppose we have a defined \textit{Likelihood Function} $\prob(\textbf{t}|\X,\textbf{a},\beta)$ and we want to find \textit{Maximum Likelihood Estimates} for parameters $\textbf{a}$. Then
+\begin{enumerate}[label=\roman*)]
+	\item Define the \textit{Likelihood Function}, $\prob(\textbf{t}|\X,\textbf{a},\beta)$.
+	\item Take the natural log, $\ln\prob(\textbf{t}|\X,\textbf{a},\beta)$.
+	\item Take the derivative wrt $\textbf{a}$, $\frac{\partial}{\partial\textbf{a}}\ln\prob(\textbf{t}|\X,\textbf{a},\beta)$.
+	\item Set the derivatite to $0$, $\frac{\partial}{\partial\textbf{a}}\ln\prob(\textbf{t}|\X,\textbf{a},\beta)=0$.
+	\item Solve to find the stationary point of $\textbf{a}$.
+	\item Check this stationary point is a maximum, if it is then it is a \textit{Maximum Likelihood Estimate}
+\end{enumerate}
+
+\example{Maximum Likelihood Estimate}
+Here I shall find the \textit{Maximum Likelihood Estimate} for $\textbf{a}$
+\[\begin{array}{rrcl}
+&\prob(\textbf{t}|\X,\textbf{a},\beta)&\sim&\prod\limits_{i=1}^m\text{Normal}(t_i|\textbf{a}^T\pmb{\phi}(\x_i),\beta^{-1})\\
+&&=&\prod\limits_{i=1}^m\dfrac{1}{\sqrt{2\pi\beta^{-1}}}e^{-\frac{1}{2}\beta(t_i-\textbf{a}^T\pmb{\phi}(x_i))^2}\\
+&&=&\left(\frac{\beta}{2\pi}\right)^{\frac{m}{2}}e^{-\frac{\beta}{2}\sum\limits_{i=1}^m(t_i-\textbf{a}^T\pmb{\phi}(x_i))^2}\\
+\implies&\ln\prob(\textbf{t}|\X,\textbf{a},\beta)&=&\frac{m}{2}(\underbrace{\ln(\beta)}_{\text{Noise Precision}}-\underbrace{\ln(2\pi)}_{\text{Constant}})-\underbrace{\frac{\beta}{2}\sum\limits_{i=1}^m(t_i-\textbf{a}^T\pmb{\phi}(x_i))}_{\text{Error}}\\
+\implies&\frac{\partial}{\partial\textbf{a}}\ln\prob(\textbf{t}|\X,\textbf{a},\beta)&=&\beta\sum\limits_{i=1}^2(\textbf{t}_i-\textbf{a}^T\pmb{\phi}(\x_i))\pmb{\phi}(x_i)^T\\
+\text{Setting}&0&=&\frac{\partial}{\partial\textbf{a}}\ln\prob(\textbf{t}|\X,\textbf{a},\beta)\\
+\implies&0&=&\beta\sum\limits_{i=1}^2(\textbf{t}_i-\textbf{a}^T\pmb{\phi}(\x_i))\pmb{\phi}(x_i)^T\\
+&&=&\left(\sum\limits_{i=1}^m\textbf{t}_i\pmb{\phi}(\x_i)^T\right)-\textbf{a}^T\left(\sum\limits_{i=1}^m\pmb{\phi}(\x_i)\pmb{\phi}(\x_i)^T\right)\\
+\implies&\textbf{a}_{MLE}&=&\left(\pmb{\phi}(\X)^T\pmb{\phi}(\X)\right)^{-1}\pmb{\phi}(\X)^T\textbf{t}
+\end{array}\]
+
+\theorem{Variance of Posterior}
+Let $\alpha$ be the parameter of the prior, $\beta$ be the parameter for the likelihood and $\X$ be the observed values from the predictor variables.
+%TODO not sure of these definitions
+\[\begin{array}{rcl}
+s_n&=&(I\alpha+\beta \X^T\X)^{-1}\\
+&=&\left(I\alpha+\beta\begin{pmatrix}
+\sum\limits_{i=1}^n1&\sum\limits_{i=1}^nx_i\\
+\sum\limits_{i=1}^nx_i&\sum\limits_{i=1}^nx_i^2
+\end{pmatrix}\right)^{-1}\\
+&=&\begin{pmatrix}
+\beta n+\alpha&\beta\sum\limits_{i=1}^nx_i\\
+\beta\sum\limits_{i=1}^nx_i&\alpha+\beta\sum\limits_{i=1}^nx_i^2
+\end{pmatrix}^{-1}\\
+&=&\dfrac{1}{(\beta n+\alpha)\left(\alpha+\beta\sum\limits_{i=1}^nx_i^2\right)-\left(\beta\sum\limits_{i=1}^nx_i\right)^2}\begin{pmatrix}
+\alpha+\beta\sum\limits_{i=1}^nx_i^2&-\beta\sum\limits_{i=1}^nx_i\\
+-\beta\sum\limits_{i=1}^nx_i&\beta n+\alpha
+\end{pmatrix}\\
+&&\text{Assume data is centred so }\sum\limits_{i=1}^nx_i=0\\
+&=&\dfrac{1}{(\beta n+\alpha)\left(\alpha+\beta\sum\limits_{i=1}^nx_i^2\right)}\begin{pmatrix}
+\alpha+\beta\sum\limits_{i=1}^nx_i^2&0\\
+0&\beta n+\alpha
+\end{pmatrix}\\
+&=&\begin{pmatrix}
+\dfrac{1}{\beta n+\alpha}&0\\
+0&\dfrac{1}{\alpha+\beta\sum\limits_{i=1}^nx_i^2}
+\end{pmatrix}
+\end{array}\]
+
+\theoremm{Mean of Posterior}
+Let $\alpha$ be the parameter of the prior, $\beta$ be the parameter for the likelihood, $\X$ be the observed values from the predictor variables and $\textbf{t}$ be the observed values for the dependent variable.
+\[\begin{array}{rcl}
+m_n&=&(\alpha I+\beta \X^T\X)^{-1}\beta \X^T\textbf{t}\\
+&=&s_n\beta\X^T\textbf{t}\\
+&=&\beta s_n\begin{pmatrix}
+1&\dots&1\\
+x_1&\dots&x_n
+\end{pmatrix}
+\begin{pmatrix}
+t_1\\
+\vdots\\
+t_n
+\end{pmatrix}\\
+&=&\beta s_n\begin{pmatrix}
+\sum\limits_{i=1}^nt_i\\
+\sum\limits_{i=1}^nt_ix_i
+\end{pmatrix}\\
+&&\text{Assume data is centred so }\sum\limits_{i=1}^nx_i=0\\
+&=&\beta\begin{pmatrix}
+\dfrac{1}{\beta n+\alpha}&0\\
+0&\dfrac{1}{\alpha+\beta\sum\limits_{i=1}^nx_i^2}
+\end{pmatrix}\begin{pmatrix}
+\sum\limits_{i=1}^nt_i\\
+\sum\limits_{i=1}^nt_ix_i
+\end{pmatrix}\\
+&=&\begin{pmatrix}
+\dfrac{\beta\sum_{i=1}^nt_i}{\beta n+\alpha}\\
+\dfrac{\beta\sum_{i=1}^nt_ix_i}{\alpha+\beta\sum_{i=1}^nx_i^2}
+\end{pmatrix}
+\end{array}\]
+
+\proposition{Prediction}
+Suppose we are given as inputs to the model: $\X$ observations from the predictor variables, $\textbf{t}$ observations from the dependent variable; $\alpha$, parameter for the prior; and $\beta$, parameter for the likelihood.\\
+If we now want to predict the value $\hat{t}$ at position $\hat{\x}$ we want to solve
+$$\prob(\hat{t}|\hat{\x},\textbf{t},\X,\alpha,\beta)=\int\prob(\hat{t}|\hat{\x},\textbf{a},\beta)\prob(\textbf{a}|\textbf{t}|\X,\alpha,\beta)d\textbf{a}$$
+where $\textbf{a}$ is the coefficient for weighting each parameter.
+
+\subsection{Dual Linear Regression}
+
+\definition{Kernel}
+A \textit{Kernel} is a function that defines an inner-produce in some space.\\
+Let $\x$ be a vector in the orignal space \& $\phi(\cdot)$ map from the original space to the kernel space. Then the \textit{Kernel Function} is defined as
+$$k(\x_i,\x_j):=\phi(\x_i)^T\phi(\x_j)$$
+
+\remark{Usefulness of Kernels}
+It is generally easier to define the inner-product of a space than to define a space \& kernels allow us to never have to realise a space. This allows us to work with infinite dimensional spaces.\\
+\nb The space defined by the \textit{Kernel} is called the \textit{Induced Space}.\\
+
+\definition{Kernel Regression}
+\textit{Kernel Regression} is the act of performing a linear regression in an \textit{Induced Space}.\\
+Let $\X$ \& $\textbf{t}$ be  training data, $\lambda$ be a parameter for noise, $\hat{\x}$ be an unseen data point which we wish to predicit a value $\hat{y}$ for. Then
+$$\hat{y}(\hat{\x})=k(\hat{\x},\x)(k(\X,\X)+\lambda I)^{-1}\textbf{t}$$
+
+\remark{Usefulness of Kernel Regression}
+Note that the problem is linear in the \textit{Induced Space} but not in the original space, thus allowing us to learn non-linear functions using lines.\\
+
+
+\remark{Changing Basis}
+Some data is clearly non-linear \& it may be helpful to transform it into another basis where linear regression is possible.\\
+\eg If the data appearas to fit a circle in a cartesian basis, it can be translated into polar co-ordinates which should be linear.\\
+\includegraphics[scale=.4]{img/changeBasis.png}
+
+\proposition{Changing Basis}
+Let $\textbf{a}$ be weightings for observed parameters and $\x$ be a set of observed parameters.\\
+Suppose we want to change the basis of $\x$, if we have a function $\phi:\mathcal{X}\to\mathcal{Z}$ which can do this then we predict $y$ as
+$$t=\textbf{a}^T\phi(\x)=\textbf{a}^T\textbf{z}$$
+
+\definition{Dual Linear Regression}
+Standard \textit{Linear Regression} is defined as a linear combination of columns. \textit{Dual Linear Regression} is a linear combination of the inner product of a new data point with each of the training data.\\
+%TODO
+
+\proposition{Dual Linear Regression Steps}
+To perform a \textit{Dual Linear Regression} perform the following
+\begin{enumerate}[label=\roman*)]
+	\item Formulate Posterior, $\prob(\theta|\X)$;
+	\item Find stationary point of posterior;
+	\item Re-write the coefficients $\textbf{a}$ in terms of the data;
+	\item Perform Kernel regression.
+\end{enumerate}
 
 \newpage
 \setcounter{section}{-1}
