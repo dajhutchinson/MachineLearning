@@ -69,10 +69,15 @@ for i in range(step,n,step):
         X[j,1]=1
     y=y_i(X)
 
+    # Calculate posterior
     mu,sigma2=calculate_posterior(X,y,s0,w0,.3)
 
+    # Plot X values against y
     axs[0].scatter(y=np.asarray(y[:,0]),x=np.asarray(X[:,0]))
 
+    # Plot distribution
     plot_distribution(axs[1],mu.A,sigma2,alpha=i**2/n**2)
-    plt.pause((10*step)/n) # Take 10 seconds total
+
+    # Animation over a total of 10 seconds
+    plt.pause((10*step)/n)
 plt.show()
