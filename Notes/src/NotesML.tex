@@ -262,7 +262,7 @@ $$\prob(\pmb{\theta}|\pmb{\chi},\nu)=f(\pmb{\chi},\nu)g(\pmb{\chi})^\nu e^{\nu\p
 \definition{Multivariate Normal Distribution}
 Let $\X\sim\mathcal{N}(\mub,\pmb{\Sigma})$. Then
 $$f_\X(\x)=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\x-\mub)^T\pmb{\Sigma}^{-1}(\x-\mub)}$$
-\nb Also known as \textit{Gaussian Distribution}.\\
+\nb Also known as \textit{Gaussian Distribution}.
 
 \section{Regression}
 
@@ -419,8 +419,10 @@ Suppose we want to change the basis of $\x$, if we have a function $\phi:\mathca
 $$t=\textbf{a}^T\phi(\x)=\textbf{a}^T\textbf{z}$$
 
 \definition{Dual Linear Regression}
-Standard \textit{Linear Regression} is defined as a linear combination of columns. \textit{Dual Linear Regression} is a linear combination of the inner product of a new data point with each of the training data.\\
-%TODO
+Standard \textit{Linear Regression} is defined as a linear combination of columns. \textit{Dual Linear Regression} is a linear combination of the inner product of a new data point with each of the training data, this allows it to consider combinations of data points.\\
+
+\remark{Intution of Dual Regression}
+\textit{Dual Regression} can be considered as describing an unseen data points as a combination of seen ones. \ie Has the shape of a rhino, fur of a tiger, ...\\
 
 \proposition{Dual Linear Regression Steps}
 To perform a \textit{Dual Linear Regression} perform the following
@@ -430,11 +432,100 @@ To perform a \textit{Dual Linear Regression} perform the following
 	\item Re-write the coefficients $\textbf{a}$ in terms of the data;
 	\item Perform Kernel regression.
 \end{enumerate}
+%TODO formulae & better explanation of process
+
+\remark{Useful Kernels}
+Not all functions can be used as \textit{Kernels}. Some that can, and can be useful,
+\begin{enumerate}[label=\roman*)]
+	\item Kernelised Euclidean Distance $\|\phi(\x_i)-\phi(\x_j)\|^2=k(\x_i,\x_i)-2k(\x_i,\x_j)+k(\x_j,\x_j)$
+	\item Exponented Quadratic $k(\x_i,\x_j)=\sigma^2 e^{-\frac{1}{2\ell^2}(\x_i-\x_j)^T(\x_i-\x_j)}$.
+\end{enumerate}
+
+\remarkk{Limitations of Linear/Dual Regression}
+\begin{enumerate}[label=\roman*)]
+	\item No uncertainty in our observed outputs;
+	\item No uncertainity in our mapping;
+	\item We have to make assumptions over the space of functions
+\end{enumerate}
+
+\subsection{Gaussian Processes}
+
+\remark{Motivation}
+Here we want to introduce uncertainty into our observed outputs \& mappings. This means that instead of outputting a discrete value we return a probability distribution. Now we can consider a few more features for our observations, such as how much does observing a value at $\x_0$ tell us about an observation at $\x_1$.\\
+\nb In the image before we have an observation for $x=-2$ and three marginals for $x=-2,3,6$ which our observation has a decreasing affec on, as distance increases.\\
+\includegraphics[scale=1]{img/decay.png}
+
+\definition{Gaussian Process}
+A \textit{Gaussina Process} is a generalisation of random variables into an infinite number of \textit{Gaussian Distributions}. The specific process is defined by a mean function $\mu(\cdot)$ and a co-variance function function $k(\cdot)$.
+$$\prob(f_1,f_2,\dots|\x,\pmb{\theta})\sim\mathcal{GP}\left(\mu(\x),k(\x,\x)\right)=\text{Normal}\left(\begin{pmatrix}
+\mu(x_1)\\\mu(x_2)\\\vdots
+\end{pmatrix},\begin{pmatrix}
+k(x_1,x_1)&k(x_1,x_2)&\dots\\
+k(x_2,x_1)&k(x_2,x_2)&\dots\\
+\vdots&\vdots&\ddots
+\end{pmatrix}\right)$$
+
+\remark{Covariance Function}
+The \textit{Covaraince Function} of a \textit{Gaussian Process} defines how much an observation at $\x_0$ affects our prediction for $\x_1$. The greater the covariance values (Not on the main diagonal) the more an observation tells us. We can define the \textit{Covariance Functions} to vary with distance \& other factors.
+$$\text{Very little effect}=\begin{pmatrix}
+1&.1\\
+.1&1
+\end{pmatrix}.\quad\text{A lot of effect}=\begin{pmatrix}
+1&.9\\
+.9&1
+\end{pmatrix}$$
+
+\remark{Sampling from a Gaussian Process}
+When we take a sample from a \textit{Gaussian Process} we are given a function which fits the distributions defined the \textit{Gaussian Process}.\\
+
+\example{Sampling from a Gaussian Process}
+\includegraphics[scale=.7]{img/samplingGaussianProccess.png}
+
+\proposition{Gaussian Process - Posterior, No Noise}
+Let $\textbf{f},\X$ be training data, $f^*,\x^*$ be training data and $k$ be the co-variance function. We have %TODO
+\[\begin{array}{rcl}\begin{pmatrix}
+\textbf{f}\\
+f^*
+\end{pmatrix}&\sim&\text{Normal}\left(\begin{pmatrix}
+\textbf{0}\\
+0
+\end{pmatrix},\begin{pmatrix}
+k(\X,\X)&k(\X,\x^*)\\
+k(\x^*,\X)&k(\x^*,\x^*)
+\end{pmatrix}\right)\\
+\prob(f^*|\x^*,\X,\textbf{f})&\sim&\text{Normal}\bigg(k(\x^*,\X)^Tk(\x^*,\X)^{-1}\textbf{f},\ k(\x^*,\x^*)-k(\x^*,\X)^Tk(\X,\X)^{-1}k(\X,\x^*)\bigg)
+\end{array}\]
+
+\proposition{Gaussian Process - Posterior, Noise}
+Let $\textbf{f},\X$ be training data, $f^*,\x^*$ be training data and $k$ be the co-variance function.\\ Define $\textbf{y}_i=f_i+\varepsilon$ where $\varepsilon\sim\text{Normal}(0,\sigma^2I)$ We have %TODO
+\[\begin{array}{rcl}\begin{pmatrix}
+\textbf{y}\\
+f^*
+\end{pmatrix}&\sim&\text{Normal}\left(\begin{pmatrix}
+\textbf{0}\\
+0
+\end{pmatrix},\begin{pmatrix}
+k(\X,\X)+\sigma^2I&k(\X,\x^*)\\
+k(\x^*,\X)&k(\x^*,\x^*)
+\end{pmatrix}\right)\\
+\prob(f^*|\x^*,\x,\textbf{y},\sigma^2)&\sim&\text{Normal}\bigg(k(\x^*,\x)^T(k(\x,\x)+\sigma^2I)^{-1}\textbf{y},\ k(\x^*,\x^*)-k(\x^*,\x)^T(k(\x,\x)+\sigma^2I)^{-1}k(\x,\x^*)\bigg)
+\end{array}\]
+
+\example{Noisy Gaussian Process}
+\includegraphics[scale=.7]{img/noisyGaussianProcess.png}
+
 
 \newpage
 \setcounter{section}{-1}
 \section{Appendix}
 
+\subsection{Definitions}
+
+\definition{Memory-Based Methods}
+\textit{Memory-Based Methods} for classification store the entire training set in order to make predictions for future data points. \eg Nearest-Neighbours.\\
+\nb These generally require a distance measure to be defined.\\
+
+\subsection{Proofs}
 \proof{Deriving Gaussian Marginal Distribution}
 \textit{NOTE - This is dense as fuck \& uses quite a bit of bullshit}.\\
 \\Let $\X\sim\mathcal{N}\left(\begin{pmatrix}
