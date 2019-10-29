@@ -7,7 +7,7 @@ CONSTANTS
 """
 min=-1 # min x value
 max=1 # max x value
-n=10 # number of samples
+n=100 # number of samples
 step=5
 w=np.matrix([[-1.3,.5]]) # True value
 w_0=np.matrix([[0],[0]]) # Prior mu
@@ -17,7 +17,7 @@ S_0=np.eye(2) # Prior variance
 Content
 """
 # Generate y values for sample of Xs
-def y_i(X_i):
+def y_is(X_i):
     e=np.random.normal(0,0.3,X_i.shape[0]) # additive Noise
     return (w*X_i.T+e).T
 
@@ -74,7 +74,7 @@ def simulation():
     for i in range(0,n):
         X[i,0]=values[i]
         X[i,1]=1
-    y=y_i(X)
+    y=y_is(X)
 
     # Increase the number of samples & plot posterior
     index = np.random.permutation(X.shape[0])
@@ -93,7 +93,8 @@ def simulation():
         plot_distribution(axs[1],m_n.A,S_n,alpha=i**2/n**2)
 
         # Animation over a total of 10 seconds
-        plt.pause((10*step)/n)
+        #plt.pause((10*step)/n)
+        plt.pause(.5)
     plt.show()
 
 def prediction(x_star):
@@ -132,4 +133,5 @@ def prediction(x_star):
     plt.show()
 
 x=scipy.uniform(loc=min,scale=max-min).rvs(1)
-prediction(np.matrix([x[0],1]))
+#prediction(np.matrix([x[0],1]))
+simulation()
