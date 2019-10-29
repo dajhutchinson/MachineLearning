@@ -54,6 +54,8 @@
 \newcommand{\expect}[0]{\mathbb{E}}
 \newcommand{\var}[0]{\mathrm{var}}
 \newcommand{\cov}[0]{\mathrm{cov}}
+\newcommand{\argmax}[0]{\mathrm{argmax}}
+\newcommand{\argmin}[0]{\mathrm{argmin}}
 
 \newcommand{\x}[0]{\textbf{x}}
 \newcommand{\X}[0]{\textbf{X}}
@@ -266,6 +268,16 @@ $$f_\X(\x)=\dfrac{1}{(2\pi)^{N/2}|\pmb{\Sigma}^{1/2}}e^{-\frac{1}{2}(\x-\mub)^T\
 
 \section{Regression}
 
+\definition{Supervised Learning}
+Learning the relationship $f(\cdot)$ between pairs of data $x_i$ and $y_i$ where $y_i=f(x_i)$.\\
+
+\remarkk{Summary of Regression}
+\begin{itemize}
+	\item[Linear Regression] We are limited to lines
+	\item[Basis Functions Regression] We can use non-linear functions, but it is hard to determine how many \& what basis functions should be used. The prior is hard to interpret.
+	\item[Kernel Regression] The complexity is defined by the data (Good) but there is no uncertainty in our estimate.
+\end{itemize}
+
 \subsection{Linear Regression}
 
 \definition{Linear Regression}
@@ -464,6 +476,7 @@ k(x_1,x_1)&k(x_1,x_2)&\dots\\
 k(x_2,x_1)&k(x_2,x_2)&\dots\\
 \vdots&\vdots&\ddots
 \end{pmatrix}\right)$$
+\nb \textit{Gaussian Processes} is non-parameteric.\\
 
 \remark{Covariance Function}
 The \textit{Covaraince Function} of a \textit{Gaussian Process} defines how much an observation at $\x_0$ affects our prediction for $\x_1$. The greater the covariance values (Not on the main diagonal) the more an observation tells us. We can define the \textit{Covariance Functions} to vary with distance \& other factors.
@@ -514,6 +527,62 @@ k(\x^*,\X)&k(\x^*,\x^*)
 \example{Noisy Gaussian Process}
 \includegraphics[scale=.7]{img/noisyGaussianProcess.png}
 
+\section{Unsupervised Learning}
+%TODO go through NotesLecturer & slides
+
+\definition{Unsupervised Learning}
+In \textit{Unsupervised Learning} we are given only the ouput data \& are tasked with deriving the underlying properties of each event.\\
+\ie Given $y=f(x)$ recover both $f(\cdot)$ \& $x$.
+
+\section{Bayesian Optimisation}
+
+\remark{Importance of Uncertainty}
+Note that we can have $\hat{x}=argmax_xp(x)=\text{argmax}_xq(x)$ but $p(\hat{x})\neq q(\hat{x})$. Due to this we need to introduce uncertainty about the value of $x$ so that we can weight out outcomes accordingly.\\
+\includegraphics[scale=.4]{img/uncertainty.png}
+
+\definition{Optimisation}
+\textit{Optimisation} is the process of finding the best outcome for a problem.\\
+
+\remark{Optimisation}
+Classically \textit{Optimisation} is seen as $\hat{x}=\argmin_xf(x)$ however we typically have an objective function that we do not know explicitly, but are able to test. Since testing in real life situations (\eg Medical Trials) are expensive we want to minimise the number required to achieve a good level of certainty.\\
+
+\definition{Global Optimisation}
+\textit{Global Optimisation} is the set of techniques for finding $x_M=\argmin_{x\in\mathcal{X}}f(x)$ where $\mathcal{X}$ is a bounded domain (reducing the amount of testing required) and $f$ is not known explicitly. It is possible that evaluations of $f$ are noisy.\\
+
+\propositionn{Bayesian Optimisation}
+\begin{enumerate}[label=\roman*)]
+	\item Choose a prior over the space of possible objective functions, $f$.
+	\item Combine the prior \& likelihood to get a posterior over the space.
+	\item Use the posterior to choose a set of evaluations according to a \underline{strategy}ive
+	.
+	\item Add new data, update posterior \& re-evaluate.
+	\item Repeat until budget is gone
+\end{enumerate}
+
+\proposition{Na\"ive Strategies for Global Optimisation}
+Below are some na\"ive \textit{Global Optimisation} stategies
+\begin{enumerate}[label=\roman*)]
+	\item Implicity knowledge, ask a SME;
+	\item Grid Search, test the domain at regular intervals; and,
+	\item Random Sampling.
+\end{enumerate}
+
+\remark{Exploration v Exploitation}
+When considering strategies for \textit{Bayesian Optimisation} we need to consider how we approach \textit{Exploration} (Testing new areas) \& \textit{Explotation} (Investigating areas which seem good). A \textit{Acquisition Function} can be defined which returns the expected gain in information if a sample was to be taken at $x$.\\
+
+\definition{Expected Improvement}
+\textit{Expected Improvement} is an \textit{Acquistion Function}.\\
+Let $\x$ be a point in the domain, $\theta$ be parameters of the distribution and $X$ be data we already know. Then
+$$EI(\x;\theta,X):=\int\max(0,y_{best}-y)\prob(y|\x,\theta,X)dy$$
+We should then sample at $\x$ where $EI(\x)\geq EI(\x')\ \forall\ x'\in\mathcal{X}$ since this point offers the greatest information gain.\\
+\nb $y_{best}$ is the best value for $y$ we have found so far. \ie The value we are trying to improve.\\
+\includegraphics[scale=.4]{img/expectedImprovement.png}
+
+\definition{Thomson Sampling}
+\textit{Thomson Sampling} is an \textit{Acquistion Function}.\\
+Let $\x$ be a point in the domain, $\theta$ be parameters of the distribution and $X$ be data we already know. Then
+$$T(\x;\theta,X):=\prob(y|\x,\x,\theta,X)$$
+\includegraphics[scale=.4]{img/thomsonSampling.png}
 
 \newpage
 \setcounter{section}{-1}
@@ -666,6 +735,16 @@ I&-\Sigma_{12}\Sigma_{22}^{-1}\\
 \end{array}\]
 Note that $E_2$ is exactly the exponent for the marginal distribution of $\x_2$ and thus what we want to factory out in order to get to the conditional distribution.
 $$\prob(\x_1|\x_2)\propto e^{-\dfrac{1}{2}\big[\x_1-\underbrace{(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))}_{\text{mean}}\big]^T(\underbrace{\Sigma/\Sigma_{22}}_{\text{covariance}})^{-1}\big[\x_1-(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))\big]}$$
-$\hfill{\blacksquare}$
+$\hfill{\square}$
+
+\subsection{Remarks}
+
+\remark{Worlds}
+We can consider 3 different when answering an ml question.
+\begin{enumerate}[label=\roman*)]
+	\item Deterministic, $x=4$;
+	\item Point Estimate, $\text{argmax}_xp(x)=4$;
+	\item Stochastic, $p(x)\sim\text{Normal}(4,10^2)$.
+\end{enumerate}
 
 \end{document}
