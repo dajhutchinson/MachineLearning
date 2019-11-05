@@ -553,8 +553,7 @@ Classically \textit{Optimisation} is seen as $\hat{x}=\argmin_xf(x)$ however we 
 \begin{enumerate}[label=\roman*)]
 	\item Choose a prior over the space of possible objective functions, $f$.
 	\item Combine the prior \& likelihood to get a posterior over the space.
-	\item Use the posterior to choose a set of evaluations according to a \underline{strategy}ive
-	.
+	\item Use the posterior to choose a set of evaluations according to a \textit{strategy}.
 	\item Add new data, update posterior \& re-evaluate.
 	\item Repeat until budget is gone
 \end{enumerate}
@@ -566,6 +565,9 @@ Below are some na\"ive \textit{Global Optimisation} stategies
 	\item Grid Search, test the domain at regular intervals; and,
 	\item Random Sampling.
 \end{enumerate}
+
+\remark{Interpretting Bayesian Optimisation}
+We cannot solve the direct problem $x_M=\argmin_{x\in\mathcal{X}}f(x)$ but can solve $x_{n+1}=\argmin_{x\in\mathcal{X}}\alpha(x;D_n,M_n)$ where $\alpha$ is an \textit{acquisition function}, $D_n$ is the samples taken in the first $n$ steps \& $M_n$ is %TODO
 
 \remark{Exploration v Exploitation}
 When considering strategies for \textit{Bayesian Optimisation} we need to consider how we approach \textit{Exploration} (Testing new areas) \& \textit{Explotation} (Investigating areas which seem good). A \textit{Acquisition Function} can be defined which returns the expected gain in information if a sample was to be taken at $x$.\\
@@ -584,6 +586,120 @@ Let $\x$ be a point in the domain, $\theta$ be parameters of the distribution an
 $$T(\x;\theta,X):=\prob(y|\x,\x,\theta,X)$$
 \includegraphics[scale=.4]{img/thomsonSampling.png}
 
+\section{Evidence}
+
+\definition{Evidence}
+\textit{Evidence} is part of \textit{Bayes' Theorem}, if models the likelihood of seeing the data we have been given, regardless of parameters.
+$$\prob(X)=\int\prob(Y|\theta)\prob(\theta)d\theta$$
+
+\proposition{Using the Evidence}
+If we have multiple models we can test them against out \textit{Evidence} \& then choose the model with the greatest accuracy.\\
+
+\remark{Evidence \& Regression Models}
+The way we model the \textit{Evidence} depends upon what sort of regression we are doing. Evidence is strongest at points where the lines intersect.\\
+
+\remark{Model Selection - Rule of Thumb}
+When choosing a model you should the simplest model which can explain the data.\\
+\nb Essentially Occam's Razor.\\
+\includegraphics[scale=.5]{img/mackay.png}
+
+\section{Graphical Models}
+
+\definition{Graphical Models}
+\textit{Graphical Models} are graphics which show dependency between elements of a model. This dependecy is the minimal factorisation of the joint distribution. \textit{Graphical Models} have several elements
+\begin{itemize}
+	\item[-] Node - Random  Variable or realisation;
+	\item[-] Edge - A stochastic relationship
+	\item[-] Plate - A product
+\end{itemize}
+\textit{Graphical Models} can be directed graphs, often known as \textit{Bayesian Networks}, or undirected, known as \textit{Markov Random Field}.\\
+
+\example{Graphical Model}
+The below graphic model shows that $\x \& \textbf{y}$ form a product (ie $x_i$ relates to $y_i$ but not $y_j$ for $i\neq j$) and that $\x$ depends on $c$ \& $\textbf{y}$ depends on $\x$.\\
+\includegraphics[scale=.5]{img/graphicalModel1.png}
+
+\example{Factorisation of a Directed Graph}
+The below \textit{Graphical Model} encodes the factorisation
+$$\prob(x_1,\dots,x_7)=\prob(x_1)\prob(x_2)\prob(x_3)\prob(x_4|x_1,x_2,x_3)\prob(x_5|x_1,x_3)\prob(x_6|x_4)\prob(x_7|x_5,x_4)$$
+\includegraphics[scale=.5]{img/graphicalModel2.png}\\
+\nb We pair each node with its direct parents.\\
+
+\example{Directed Graph with Constants}
+We can include \textit{Constants} in a \textit{Graphical Model} as nodes without a circle.\\
+\includegraphics[scale=.5]{img/graphicalModel3.png}
+
+\proposition{Explaining Away}
+\textit{Explaining Away} is the process of breaking down a feature into multiple features in such a way that you isolate a particular variance of that feature. This is useful as we may not know much about the original feature but a lot about the sub-features.\\
+
+\example{Explaining Away}
+Say you have an image you may wish to break it down into objects, positions \& orientations so that the object variable \textit{explains aways} variance associated with objects from the image. Positions \& orientations will contain no information about the objects. This can be considered as an integral
+$$\prob(\text{Image})=\int\prob(\text{Image}|\text{Object,Position,Orientation})\prob(\text{Object})\prob(\text{Position})\prob(\text{Orientation})$$
+
+\proposition{Hierarchical Knowledge}
+We can extent the idea of \textit{Explaining Away} by applying it to the sub-features we have produced. If we keep applying this (in a linear fashion) until we find a sub-$\dots$-sub-feature that we have knowledge about then we have utilised a \textit{Hierarchical Knowledge}.\\
+This is analogous to defining lots of relationships between features st many features can be explained by a few (in a linear fashion).\\
+
+\section{Non-Parametric Models}
+
+\definition{Non-Parameteric Models}
+\textit{Non-Parameteric Models} do not have a specified \textit{a Priori} but are instead determined by the data. This does not mean \textit{Non-Parameteric Models} have no parameters but rather the number they have is not fixed \& their values are not pre-defined. \textit{Non-Parameteric Models} cope in an infinite dimenional parameter space.\\
+
+\definition{Nearest-Neighbour Classifier}
+A \textit{Nearest-Neighbour Classifier} takes in a series of training observations \& then when given a test observation simply assigns it to the class of its nearest-neighbour from the training observations.\\
+\nb \textit{Nearest-Neighbour Classifier}s consider all features equally, at high dimension irrelevant features may be given too much weight.\\
+
+\definition{$k$-Nearest-Neighbour Classifier}
+A \textit{$k$-Nearest Neighbour Classifier} is an extension of the \textit{Nearest Neighbour Classifier}. Instead of just considering the nearest neighbour, it considers the $k$ nearest neighbours to the test observation \& assigns the test observation to the majority class of these $k$ training observations.\\
+
+\definition{Gaussian Mixtures Method}
+\textit{Gaussian Mixtures Method} is a \textit{Non-Parameteric Model} which implements \textit{Soft Clustering}. By specifing the number of clusters we want to produce, $k$, we can apply the \textit{Expectation-Maximisation} algorithm to produce $k$ gaussian distributions which represent $k$ different clusters within the data.
+\begin{enumerate}[label=\arabic*)]
+	\item Initialise random means for each cluster $\mu_1(1),\dots,\mu_k(1)$.
+	\item\textit{Estimation Step}\\
+	$\forall\ x_i\ \forall\ j\in[1,k]$ set $z_{ij}(t):=\expect\big(z_{ij}|x_j,\mu_j(t)\big)$.\\
+	Normalise $z_{i1},\dots,z_{ik}$ st $\sum_{i=1}^kz_{ij}=1$
+	\item \textit{Maximisation Step}\\
+	$\forall\ j\in[1,k]$ set $\mu_j(t+1):=\dfrac{\sum_{i=1}^nz_{ij}(t)x_i}{\sum_{i=1}^nz_{ij}(t)}$
+\end{enumerate}
+
+\remark{Gaussian Processes}
+\textit{Gaussian Processes} are \textit{Non-Parameteric}.\\
+
+\definition{Generative Model}
+A \textit{Generative Model} is a model which given a set of outcomes $y$ it wishes to derive the data which formed it, $X$.
+$$\prob(X|Y=y)$$
+
+\example{Constructing a Generative Model}
+Consider a scenario where we want to model the topics which occur in a text.\\
+We will define a "topic distribution" which gives the likelihood of each topic, independent of the data.\\
+To consider words we define a "word-topic distribution" which gives the likelihood of a given topic being discussed given a certain word has occurred.\\
+We can specify a generative model for text data by
+\begin{enumerate}[label=\roman*)]
+	\item Choose a random distribution over topics
+	\item Randomly choose a topic from the topic distribution
+	\item Randomly choose a word from word distribution of that topic
+\end{enumerate}
+Let $w_{d,n}$ be the $n^\text{th}$ word in the $d^\text{th}$ document, $\beta_k$ be the topic-word distribution of the $k^\text{th}$ topic, $\theta_d$ be the topic distribution for the $d^\text{th}$ document and $z_{d,b}$ be the true topic for $n^\text{th}$ word in the $d^\text{th}$ document.\\
+Then we have joint distribution
+$$\prob(w,z,\theta,\beta)=\underbrace{\prod_{k=1}^K\prob(\beta_k)\underbrace{\prod_{d=1}^D\prob(\theta_k)\underbrace{\prod_{n=1}^N\prob(w_{d,n}|\beta,z_{d,n})\prob(z_{d,n}|\theta_d)}_{\text{word}}}_{\text{document}}}_{\text{corpus}}$$
+
+\subsection{Dirichlet Process}
+
+\definition{Dirichlet Distribution}
+The \textit{Dirichlet Distribution} is a generalisation of the $\beta$ distibution \& is the conjugate prior of the \textit{Multinominal Distribution}.
+$$\text{Dir}(\pmb{\mu}|\alpha)=\frac{\Gamma(\alpha_0)}{\Gamma(\alpha_1)\cdot\dots\cdot\Gamma(\alpha_K)}\prod_{k=1}^K\mu_k^{\alpha_{k}-1}$$
+
+\definition{Dirichlet Process}
+A \textit{Dirichlet Process} is an infinite dimensional generalisation of a \textit{Dirichlet Distribution}. It generates a partioning of (possibly) infinite number of elements. It is unintuitive to define a \textit{Dirichlet Process} mathematically \& thus we write it constructively.\\
+
+\definition{Chinese Restaurant Process}
+Consider having an infinite number of tables (clusters) \& dishes (labels for clusters) andgit customers (data points). Any number of customers can sit at a table but only one dish is allowed per table. We consider how to distribute customers between tables.\\
+Consider when a new customer arrives, the probability they start to a new table is $\frac{\alpha}{N-1-\alpha}$ where $N$ is the number of customers already in the restaurant \& $\alpha$ is a sensitivity value we have set.\\
+If they choose to not sit at a new table they sit at table $i$ with probailitiy $\frac{n_i}{N}$ where $n_i$ is the number of people already at table $i$.\\
+By varying $N$ \& $\alpha$ we perform simulations to determine how many tables are used \& how many people sit at each one.\\
+
+\proposition{}
+
 \newpage
 \setcounter{section}{-1}
 \section{Appendix}
@@ -593,6 +709,12 @@ $$T(\x;\theta,X):=\prob(y|\x,\x,\theta,X)$$
 \definition{Memory-Based Methods}
 \textit{Memory-Based Methods} for classification store the entire training set in order to make predictions for future data points. \eg Nearest-Neighbours.\\
 \nb These generally require a distance measure to be defined.\\
+
+\definition{Multinomial Distribution}
+\textit{Multinomial Distribution} is a generalisation of the \textit{Binomial Distribution}.\\
+It considers $n$ independent trials where each results in one of $k$ categories with the probability of each category being fixed.\\
+$$\prob(\x;\textbf{p})=\begin{cases}\dfrac{n!}{x_1!\cdot\dots\cdot x_k!}p_1^{x_1}\cdot\dots\cdot p_k^{x_k},&\text{if }\sum_{i=1}^kx_i=n\\0&\text{otherwise}\end{cases}\text{ for }\x\in\reals^k$$
+\nb Consider rolling a $k$ sided dice $n$ times
 
 \subsection{Proofs}
 \proof{Deriving Gaussian Marginal Distribution}
