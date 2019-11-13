@@ -698,7 +698,145 @@ Consider when a new customer arrives, the probability they start to a new table 
 If they choose to not sit at a new table they sit at table $i$ with probailitiy $\frac{n_i}{N}$ where $n_i$ is the number of people already at table $i$.\\
 By varying $N$ \& $\alpha$ we perform simulations to determine how many tables are used \& how many people sit at each one.\\
 
-\proposition{}
+\section{Neural Networks}
+
+\remark{Motivation}
+The motivation for the theory of \textit{Neural Networks} is to mimic "brain structure" by having a series of nodes which take in signals and only pass on a signal if a certain threshold is met.\\
+It has been theorised that all intelligence could be modelled by logical rules this appears to be untrue and thus a probabilisitc approach has been taken, \textit{Machine Learning}, where data is used to make inferences.\\
+
+\definition{Neural Networks}
+\textit{Neural Networks} were first described in 1940 by \textit{Walter Pitts} where the main idea was to composite a function into several functions. \textit{Neural Networks} have a directed graph structure and is made of layers which are split into the input layer, output layer and hidden layer\textit{s}. Each node in one layer connects to all the nodes in the next layer.\\
+\includegraphics[scale=.7]{img/neuralNetwork.png}
+
+\proposition{Function for Hidden Layers}
+Below is a general function used to determine whether a neuron in a hidden layer is fired
+$$z_j=h(a_j)\text{ where }a_j=\sum_{i=1}^Dw_{ji}x_i+w_{j0}$$
+where $w_{ji}$ is the weight applied to the $i^{th}$ neuron by the $j^{th}$, $x_i$ is the value of the $i^{th}$ neuron, $w_{j0}$ is a bias \& $h(\cdot)$ is an activation function which acts to threshold $a_j$.\\
+
+\proposition{Function for Ouptut Layer}
+Whether a neuron on the \textit{Output Layer} is fired, to signal that this input should have this output, is determined by the below functions
+$$y_k=f(a_k)=\sigma(a_k)\text{ where }a_k=\sum_{j=1}^Mw_{kj}z_j+w_{k0}$$
+where $w_{kj}$ is the weight applied to the $j^{th}$ neuron by $k^{th}$, $w_{k0}$ is a bias and $z_j$ is the value of the $j^{th}$ neuron.\\
+
+\proposition{Nesting Functions}
+Since the functions for the \textit{Output Layer} depends on the vales on the hidden layers, and the hidden layers values depend on the previous layers to themselves it is clear to see how these functions become nested, composite functions.\\
+\includegraphics[scale=.8]{img/neuralNetworkFunction.png}
+
+\definition{Kernel of a Function}
+The \textit{Kernel} of a function is the set of values which map to themselves when the function is applied to them
+$$\text{Ker}(f)=\{x\in X:f(x)=x\}\subseteq X\}$$
+
+\definition{Image of a Function}
+The \textit{Image} of a function is the set of all possible values which the function can output
+$$\text{Im}(f)=\{y\in Y:\exists\ x\in X\text{ st }f(x)=y\}$$
+
+\theorem{Rank-Nullity Theorem}
+The \textit{Rank-Nullity Theorem} states that dimensionalities of the image and the kernel of a function will always sum to the dimensionality of the input space
+$$\text{dim}(\text{Im}(f))+\text{dim}(\text{Ker}(f))=\text{dim}(X)$$
+
+\proposition{Shrinking Image}
+We can use the \textit{Rank-Nullity Theorem} and some intuition to realise that if we keep applying a function to itself its \textit{Image} will never grow and thus, the \textit{Kernel} can only grow.\\
+The intuition here is that elements in the \textit{Kernel} can never leave it, by definition, by values may be mapped to a \textit{Kernel} value and thus leave the \textit{Image} and grow the \textit{Kernel}, where they are now stuck.\\
+
+\remark{Usefulness of Shrinking Image}
+By shrinking the \textit{Image} we are reduction what we are required to know, thus simplifying problems.\\
+
+\theorem{Change of Variable}
+Let $\x\in\mathcal{X}\subseteq\reals^n$ be a random vector with a probability density function given by $P_\X(\x)$ and let $\textbf{t}\in\mathcal{Y}\subseteq\reals^n$ be a random vector st $\phi(\textbf{y})=\x$ where $\pi:\mathcal{Y}\to\mathcal{X}$ is bijective and $|\nabla\phi(\textbf{y})|>0\ \forall\ \textbf{y}\in\mathcal{Y}$. Then the probabiltiy density funcyion $p_Y(\cdot)$ induced in $\mathcal{Y}$ is given by
+$$p_Y(\textbf{y})=p_X(\phi(\textbf{y}))|\nabla\phi(\textbf{y})|$$
+where $\nabla\phi(\cdot)$ denotes the Jacobian of $\phi(\cdot)$ and $|\cdot|$ denotes the determinant operator.\\
+
+\proposition{Neural Network Learning}
+\textit{Neural Networks} "Learn" by, first, \textit{Forward Propogation} where the hidden \& output layers apply their functions; then an error is calcualted for the set of weights, $W$, which were used during \textit{Forward Propogation}
+$$E(W)=\sum_{i=1}^n\frac{1}{2}(g(\x_i,W)-y_i)^2+\text{reg}(W)$$
+where $g(\cdot,\cdot)$ is the function which represents all the composite functions (here it outputs what the network belives the answer is), $y_i$ is the true result for $y_i$ and $\text{reg}(W)$ is %TODO
+. The error is then back propogated to update the weights.\\
+
+\definition{Backpropogation}
+We update weights of neurons using by considering the gradient of the error (\ie how error changes between neurons).
+$$W_t=W_{t-1}+\nu\frac{\partial}{\partial W}E(W)$$
+where $\nu$ is the \textit{Learning Rate}.\\
+We know the error on the output layer. The formula below allows us to propgate this eror back through the layers
+$$\delta_\equiv\frac{\partial E_n}{\partial a_j}=\sum_k\frac{\partial E_n}{\partial a_k}\frac{\partial a_k}{\partial a_j}=\frac{\partial h(a_j)}{\partial a_j}\sum_jw_{kj}\delta_k$$
+%TODO explain this
+
+\propositionn{Process of Backpropagation}
+\begin{enumerate}[label=\roman*)]
+	\item Randomly initialise weights.
+	\item Forward propogate.
+	\item Compute Error.
+	\item Compute gradients for one step back.
+	\item Iteratively push gradients back.
+	\item Update each layer.
+	\item Repeat \textbf{ii)-vi)} until convergence
+\end{enumerate}
+
+\propositionn{Possible Acitvation Functions}
+\begin{itemize}
+	\item[-] Sigmoid, $f(x)=\dfrac{1}{1+e^{-x}}$
+	\item[-] Tanh, $f(x)=\text{tanh}(x)=\dfrac{2}{1+e^{-2x}}-1$
+	\item[-] ReLu, $f(x)=max(0,x)\approx\ln(1+e^x)$
+\end{itemize}
+
+\proposition{Neural Network Architectures}
+There are many possible architectures for \textit{Neural Networks} and if we know \textit{a priori} then we can use that to reduce the search space.
+\begin{itemize}
+	\item[-] Convolution Neural Networks - Takes a weighted average within a spatial region (\ie blurring). Logic is that pixels depend on their neighbours.
+	\item[-] Recurrent Neural Networks - Designed ot model sequential data
+\end{itemize}
+
+\remark{Neural Networks $\neq$ Models}
+\textit{Neural Networks} are \textit{Decision Machines}, not \textit{Models}. This means they do not understand the data \& have no concept of uncertainty, thus new data cannot be generated from them. Further, random noise will always be assigned a label.\\
+
+\propositionn{Combatting Limitations of Neural Networks being Decision Machines}
+\begin{itemize}
+	\item[-] Early stopping;
+	\item[-] Layer-wise training;
+	\item[-] Denoising;
+	\item[-] Afverserial training;
+	\item[-] Drop out
+\end{itemize}
+
+\section{Reinforcement Learning \& Decisions}
+
+\definition{Reinforcement Learning}
+\textit{Reinforcement Learning} tries to learn a solution without specifying the task explicitly, instead a system of providing awards for good actions is used.\\
+
+\propositionn{Reinforcement Learning Process}
+\begin{enumerate}[label=\roman*)]
+	\item Agent takes an action in the environment.
+	\item The environment changes as a result.
+	\item The agent may be rewarded.
+	\item Repeat \textbf{i)-iii)} until a time limit is reached
+\end{enumerate}
+\nb The strategy determined for the agent is called the \textit{policy}.\\
+
+\remark{Optimal Behaviour wrt Time}
+Different strategies are required to find an \textit{optimal behaviour} depending upon the time scale
+\begin{itemize}
+	\item[-] Finite time horizon, ${\displaystyle\expect\left(\sum_{t=0}^hr_t\right)}$
+	\item[-] Average Reward (over all times), ${\displaystyle\lim_{h\to\infty}\expect\left(\frac{1}{h}\sum_{t=0}^hr_t\right)}$
+	\item[-] Infinite Horizon (discounted reward) ${\displaystyle\expect\left(\sum_{t=0}^\infty\gamma^tr_t\right)}$ for $\gamma\in[0,1]$
+\end{itemize}
+
+\definition{Markov Decision Process}
+Suppose we have a fully observable system we can determine the optimal policy using dynamic programming. \ie We know the \textit{Transition Matrix}, $T(s,a,s')$, and \textit{Reward Matrix}, $R(s,a,s')$, explicitly.
+$$T(s,a,s')=\prob(s_{t+1}=s'|s_t=s,a_t=a)$$
+$$R(s,a,s')=\expect(s_t=s,a_t=a,s_{t+1}=s')$$
+where $s$ is the current state, $s'$ is another state \& $a$ is the action taken.\\
+
+\remark{We might not be able to observe a state}
+
+\proposition{Model Free}
+Learning a mdel can be hard due to uncertainty propagation. Directly learning a function from state-action sets to reward can be easier
+$$Q:\mathcal{S}\times\mathcal{A}\to\reals$$
+\nb This does not build a model, rather a decision system.\\
+
+\remark{Tricky part of Reinforcement Learning}
+How to get the data.\\
+
+\remark{Exploration v Explotation}
+When thinking of a strategy to come up with a policy we need to balance: exploring the environement \& exploiting what we know.
 
 \newpage
 \setcounter{section}{-1}
