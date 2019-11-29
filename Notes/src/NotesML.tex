@@ -29,6 +29,9 @@
 \fancyhead[C]{Machine Learning - Notes}
 \fancyhead[R]{\today}
 
+% Enumerate
+\setlist[enumerate,1]{label={\roman*)}}
+
 % Counters
 \newcounter{definition}[section]
 \newcounter{example}[section]
@@ -56,6 +59,7 @@
 \newcommand{\cov}[0]{\mathrm{cov}}
 \newcommand{\argmax}[0]{\mathrm{argmax}}
 \newcommand{\argmin}[0]{\mathrm{argmin}}
+\newcommand{\proved}[0]{$\hfill\square$\\}
 
 \newcommand{\x}[0]{\textbf{x}}
 \newcommand{\X}[0]{\textbf{X}}
@@ -838,6 +842,191 @@ How to get the data.\\
 \remark{Exploration v Explotation}
 When thinking of a strategy to come up with a policy we need to balance: exploring the environement \& exploiting what we know.
 
+\section{Classification}
+
+\definition{Classification Task}
+Consider a data set $\mathcal{D}$ where each item belongs to a class in $\mathcal{C}$.\\
+The \textit{Classification Task} is given a set of observations $\{\mathcal{D,C}\}$ can we correctly associate new data to the correct classes?\\
+
+\remark{Generative Models}
+Suppose we have an image of a dog. The fact the appearance of image is a dog does not make the object a dog, the fact that the object is a dog makes the image have the appearance of a dog. Further we can have images that have the appearance of a dog but are not of a dog, such as drawings.\\
+
+\remark{Classification is an Iverse Problem}
+Further to \textbf{Remark 11.1} we note that multiple classes of objects can produce the same image. Thus when performing \textit{Classification} on an image we might need to return multiple possible classes.\\
+
+\proposition{Formulating Classification}
+Let $\x$ be a set of observed values \& $c_1\in\mathcal{C}$ is one of the possible classes we can assign to $\x$. By \textit{Bayes' Rule} we have
+$$\prob(c_1|\x)=\dfrac{\prob(\x|c_1)\prob(c_1)}{\prob(\x)}$$
+When the cardinality of $\mathcal{C}$ is low we can calculate the \textit{Evidence} explicitly
+$$\prob(\x)=\sum_{c\in\mathcal{C}}\prob(\x|c)\prob(c)$$
+Meaning the \textit{Posterior} can be formulatede as
+$$\prob(c_1|\x)=\frac{\prob(\x|c_1)\prob(c_1)}{\sum_{c\in\mathcal{C}}\prob(\x|c)\prob(c)}$$
+
+\proposition{Binary Classification}
+Suppose we are classifying to one of two classes, \ie $\mathcal{C}:=\{c_1,c_2\}$. Then we have
+\[\begin{array}{rrcl}
+&\prob(\x)&=&\prob(\x|c_1)\prob(c_1)+\prob(\x|c_2)\prob(c_2)\\
+\implies&\prob(c_1|\x)&=&\dfrac{\prob(\x|c_1)\prob(c_1)}{\prob(\x|c_1)\prob(c_1)+\prob(\x|c_2)\prob(c_2)}\\
+&&=&\dfrac{\left(\frac{1}{\prob(\x|c_1)\prob(c_1)}\right)}{\left(\frac{1}{\prob(\x|c_1)\prob(c_1)}\right)}\dfrac{\prob(\x|c_1)\prob(c_1)}{\prob(\x|c_1)\prob(c_1)+\prob(\x|c_2)\prob(c_2)}\\
+&&=&\dfrac{1}{1+\frac{\prob(\x|c_2)\prob(c_2)}{\prob(\x|c_1)\prob(c_1)}}\\
+&&=&\dfrac{1}{1+\text{exp}\left(\ln\left(\frac{\prob(\x|c_2)\prob(c_2)}{\prob(\x|c_1)\prob(c_1)}\right)\right)}\\
+&&=&\dfrac{1}{1+\text{exp}\left(-\ln\left(\frac{\prob(\x|c_1)\prob(c_1)}{\prob(\x|c_2)\prob(c_2)}\right)\right)}\\
+&&=&\dfrac{1}{1+\text{exp}\left(-\ln\left(\frac{\prob(\x,c_1)}{\prob(\x,c_2)}\right)\right)}
+\end{array}\]
+We note the \textit{Sigmoid Function} has the form
+$$y(t)=\frac{1}{1+e^{-t}}$$
+By setting $t=\ln\left(\frac{\prob(\x,c_1)}{\prob(\x,c_2)}\right)$ we can use the \textit{Sigmoid Function} for \textit{Binary Classification}.\\
+
+\proposition{Binary Classification - Gaussian}
+In \textbf{Proposition 11.2} we did not specify the model for the data.\\
+Suppose $\prob(\x|c_i)\sim_{Normal}(x|\mu_i,\sigma^2_i)$ then
+\[\begin{array}{rrl}
+t&:=&\ln\left(\frac{\prob(\x|c_1)\prob(c_1)}{\prob(\x|c_2)\prob(c_2)}\right)\\
+&=&{\displaystyle\ln\left(\frac{\frac{1}{\sqrt{2\pi\sigma^2_1}}e^{-\frac{(\x-\mu_1)^2}{2\sigma^2_1}}\prob(c_1)}{\frac{1}{\sqrt{2\pi\sigma^2_2}}e^{-\frac{(\x-\mu_2)^2}{2\sigma^2_2}}\prob(c_2)}\right)}\\
+&=&-\frac{1}{2}\ln\left(\frac{2\pi\sigma^2_1}{2\pi\sigma^2_2}\right)+\ln\left(\frac{\prob(c_1)}{\prob(c_2)}\right)-\frac{(x-\mu_1)^2}{2\sigma^2_1}+\frac{(x-\mu_2)^2}{2\sigma^2_2}\\
+&=&\ln\left(\frac{\sigma_2}{\sigma_1}\right)+\ln\left(\frac{\prob(c_1)}{\prob(c_2)}\right)-x^2\left(\frac{1}{2\sigma_1^2}-\frac{1}{2\sigma_2^2}\right)+x\left(\frac{\mu_1}{\sigma_1^2}-\frac{\mu_2}{\sigma^2_2}\right)-\left(\frac{\mu_1^2}{\sigma_1^2}-\frac{\mu_2^2}{\sigma^2_2}\right)
+\end{array}\]
+We can analyse this expression of $t$ to see how the relationship between the distributions of $c_1$ \& $c_2$ affect classification.
+\begin{enumerate}
+	\item If $\sigma_1=\sigma_2$ the posterior is linear in $\x$.
+	\item If $\mu_1=\mu_2$ and $\sigma_1=\sigma_2$ then the posterior is independent of $\x$ since $\prob(c_1|\x)=\prob(c_1)$
+\end{enumerate}
+
+\subsection{Logisitic Regression}
+
+\definition{Logistic Regression}
+\textit{Logisitic Regression} is a process of deriving an $f(\cdot)$ st
+$$\prob(c_1|\x)=\frac{1}{1+e^{-f(\x)}}=\sigma(\x)$$
+is a good binary classifier.\\
+We aim to define $f(\cdot)$ such that objects in $c_1$ produced large \textit{positive} values \& objects in $c_2$ produce large \textit{negative} values.\\
+
+\remark{Linear Classification}
+If we use a \textit{Linear Classifier} with \textit{Logistic Regression} we define $f(\x)=\textbf{w}^T\x$ and our problem is to find $\textbf{w}$ which maximises positive values when $\x$ is of class $c_1$, and negative values when $\x$ is of class $c_2$.
+$$\hat{\textbf{w}}_\text{MLE}=\text{argmax}_\textbf{w}\prob(\mathcal{C|D})=\text{argmin}_\textbf{w}-\ln\prob(\mathcal{C|D})$$
+
+\remark{Usefullness of Logistic Regression}
+If our feature data has high dimensionality then the mean \& co-variance matrices for each class will be high. This means that \textit{Classifiers} will have lots of parameters which need to be found. \textit{Logisitic Regression} requires only 1 more than the dimensionality of the feature data (a bias).\\
+
+\example{Remark 11.4}
+Suppose $\x\in\reals^{100}$ then each Gaussian $(\mu_i,\Sigma_i)$ would have dimensionality $\mu_i\in\reals^{100}\ \&\ \Sigma_i\in\reals^{100\times100}$. For a binary classifier this would require ${2(100+100\times100)=20200}$ parameters. Whereas a \textit{Logistic Regression} model requires $101$.\\
+
+\remark{Limitations of Logistic Regression}
+If a \textit{Logistic Regression} model is given an outlier point it will define it with almost absolute certainty to the class it is closest to. Other \textit{Models} which use a \textit{Gaussian} distribution will classify it to the same class as the \textit{Logistic Regression} model but with lower certainty as the two tails will have a similar value at the outlier.
+
+\subsection{Laplace Approximation}
+
+\definition{Laplace Approxmation}
+\textit{Laplace Approximation} is used to approximate the integral of functions which have most their mass concentrated in a small area (and thus have rapidly decreasing tails).\\
+Let $x_0:=\text{argmax}_xg(x)$ for some continuous function $g$.\\
+Define $h(x):=\ln g(x)$. Then
+\[\begin{array}{rcl}
+\displaystyle\int_a^bg(x)dx&=&{\displaystyle\int_a^b\text{exp}(h(x)dx}\\
+&\approx&{\displaystyle\int_a^b\text{exp}\left(h(x_0)+h'(x_0)(x-x_0)+\frac{1}{2}h''(x_0)(x-x_0)^2\right)dx\text{ by Taylor Expansion}}\\
+\end{array}\]
+Since we define $h(x_0)$ to be a maximum, $h'(x_0)=0$. Thus
+$$\int_a^b\text{exp}(h(x))dx\approx\int_a^b\text{exp}\left(h(x_0)+\frac{1}{2}h''(x_0)(x-x_0)^2\right)$$
+TODO - Read book on this
+
+\section{Approximative Inference}
+
+\definition{Markov Random Field}
+A \textit{Markov Random Field} is a graph of random variables where edges show dependency between random variables.\\
+Images can be considered as \textit{Markov Random Fields} as adjacent pixels depend upon each other.\\
+\nb Also known as a \textit{Markov Network}.\\
+
+\remark{Markov Random Field Marginal Likelihood}
+Let $\{x_1,x_2,\dots\}$ be the set of all binary images \& $y$ be a class that an image can be assigned to. Then
+$$\prob(y)=\int\prob(y|x)\prob(x)dx=\sum_i\prob(y|x_i)\prob(x_i)$$
+\ie Integrating over all binary images. The number of possible binary images is finite so we can sum over it, but it is a big number so obviously a fouls errend.\\
+
+\remarkk{Techniques for sampling from distributions we do not know the form of}
+\begin{enumerate}[label=\roman*)]
+	\item Rejection Sampling.
+	\item Importance Sampling.
+	\item Markov Chain Monte Carlo.
+\end{enumerate}
+
+\remark{}
+Let $p(\cdot)$ be a distribution we do not know how to sample from \& $\tilde{p}(\cdot)$ be one we do
+$$p(\cdot)=\frac{1}{Z}\tilde{p}(z)$$
+
+\definition{Rejection Sampling}
+\textit{Rejection Sampling} is a tecnique used to sample from distributions which we do not know explicitly.\\
+Suppose $Z\sim f_Z(\cdot)$ is a distribution we do not know the form of.
+\begin{enumerate}
+	\item Pick an approximate distribution, $h_Z(\cdot)$.
+	\item Choose a $k\in\reals^{\geq0}$ such that $kh_Z(z)\geq f_Z(z)\ \forall\ z$.
+	\item Pick a random location using the approximate distribution $z_0\sim h_Z(\cdot)$.
+	\item Pick a random number from the uniform distribution $u_0\sim\text{Uniform}[0,kh_Z(z_0)]$.
+	\item If $u_0>f_Z(z_0)$ then reject $z_0$ otherwise sample it.
+\end{enumerate}
+\includegraphics[scale=.4]{img/rejectionSampling.png}
+
+\remarkk{Reject Sampling}
+\begin{itemize}
+	\item[-] We can use the distribution of the samples as a \textit{proposed distribution} for $f_Z$.
+	\item[-] If the bound between $kh_Z$ and $f_Z$ is tight then the sampler is efficient. Often it is nt though as we have to set $k$ so high.
+	\item[-] Does not scale well to multiple dimension.
+	\item[-] Lots of samples get rejected.
+\end{itemize}
+
+\definition{Importance Sampling}
+Suppose $Z\sim f_Z(\cdot)$ is a distribution we do not know the form of and $h_Z$ be a distribution we do know explicitly.\\
+\textit{Importance Sampling} is a technique used estimate teh expected value of $Z$.
+\[\begin{array}{rcl}
+\expect_{\prob}(f_Z)&=&\int f_Z(z)\prob(z)dz\\
+&=&\int f_Z(z)\prob(z)\frac{h_Z(z)}{h_Z(z)}dz\\
+&=&\int f_Z(z)\frac{\prob(z)}{h_Z(z)}h_Z(z)dz\\
+&=&\expect_{h_Z}\left(f_Z(z)\frac{\prob(z)}{h_Z(z)}\right)\\
+&\approx&{\displaystyle\frac{1}{L}\sum_{i=1}^Lf_Z(z^{(i)})\frac{\prob(z^{(i)})}{h_Z(z^{(i)})}}\\
+\end{array}\]
+where $z^{(i)}\sim h_Z(\cdot)$.\\
+TODO - pretty sure I am confused about $f_Z$ and $h_Z$.\\
+
+\remarkk{Importance Sampling}
+\begin{itemize}
+	\item[-] Accepts all samples.
+	\item[-] $\frac{\prob(z^{(i)})}{f_Z(z^{(i)})}$ corrects bias in sampling from the wrong distribution.
+	\item[-] It is not always possible to evaluate $\prob(z)$.
+\end{itemize}
+
+\definition{Markov Chain Monte Carlo}
+\textit{Markov Chain Monte Carlo} is a set of methods used for sampling from a probability distribution which is not known explicitly.\\
+Let $z_t$ be the state at time $t$ and $h_Z(\cdot)$ be a proposed conditional distribution which we can sample from.
+\begin{enumerate}
+	\item Initialise a state $z_0$.
+	\item Sample from the proposed conditional distribution $h_Z(z^*|z_0)$.
+	\item Compute an acceptance probability
+	$$A(z^*,z_0)=\min\left(1,\frac{\tilde{p}(z^*)}{\tilde{p}(z_0)}\right)$$
+	\item Sample $u\sim\text{Uniform}(0,1)$.
+	\begin{enumerate}
+		\item If $A(z^*,z_0)$ >0 then $z_1=z^*$.
+		\item Else $z_1=z_0$.
+	\end{enumerate}
+	\item Repeat 2-4 until time limit is reached.
+\end{enumerate}
+
+\example{Markov Chain Monte Carlo}
+\includegraphics[scale=.4]{img/mcmc.png}
+
+\remarkk{Markov Chain Monte Carlo}
+\begin{itemize}
+	\item[-] Has the \textit{Markov Property} - Remembers its state from the last sample \& uses it.
+	\item[-] Good for exploration due to \textit{Markov Property}.
+\end{itemize}
+
+\definition{Gibbs Sampling}
+\textit{Gibbs Sampling} exploits the fact that 1-dimension samples are often easy to get, in order to create a very simple markov chain.\\
+\begin{enumerate}
+	\item Intialise a state $\x_0$.
+	\item Pick a single variable from that state, $x_i\in\x$.
+	\item Formulate a posterior, $\prob(x_i|\x_{\neg i})$. $\x_{\neq i}$ is the state $x$ without variable $x_i$.
+	\item Sample from the posterior
+	$x_{(1,i)}\sim\prob(x_i|\x_{\neq i})$.
+	\item Repeat 2-4 for all variables.
+\end{enumerate}
+\nb The general idea is to sample each variable in turn.
+
 \newpage
 \setcounter{section}{-1}
 \section{Appendix}
@@ -919,7 +1108,7 @@ Now we have a full expression
 \prob(\x_1)&=&\dfrac{e^{E_2}}{(2\pi)^{\frac{D-D_2}{2}}|\Lambda_{22}^{-1}|^{-\frac{1}{2}}|\Sigma|^{\frac{1}{2}}}\\
 &=&\dfrac{1}{(2\pi)^{\frac{D_1}{2}}|\Sigma_{11}|^{\frac{1}{2}}}e^{-\frac{1}{2}(\x_1-\mub_1)^T\Sigma_{11}^{-1}(\x_1-\mub_1)}
 \end{array}\]
-$\hfill{\blacksquare}$
+\proved
 
 \proof{Deriving Gaussian Conditional Distribution}
 \\Let $\X\sim\mathcal{N}\left(\begin{pmatrix}
@@ -995,8 +1184,7 @@ I&-\Sigma_{12}\Sigma_{22}^{-1}\\
 \end{array}\]
 Note that $E_2$ is exactly the exponent for the marginal distribution of $\x_2$ and thus what we want to factory out in order to get to the conditional distribution.
 $$\prob(\x_1|\x_2)\propto e^{-\dfrac{1}{2}\big[\x_1-\underbrace{(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))}_{\text{mean}}\big]^T(\underbrace{\Sigma/\Sigma_{22}}_{\text{covariance}})^{-1}\big[\x_1-(\mub_1+\Sigma_{21}\Sigma_{22}^{-1}(\x_2-\mub_2))\big]}$$
-$\hfill{\square}$
-
+\proved
 \subsection{Remarks}
 
 \remark{Worlds}
