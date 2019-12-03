@@ -1005,6 +1005,7 @@ Let $z_t$ be the state at time $t$ and $h_Z(\cdot)$ be a proposed conditional di
 	\end{enumerate}
 	\item Repeat 2-4 until time limit is reached.
 \end{enumerate}
+\nb Also known as \textit{Metropolis Sampling}.\\
 
 \example{Markov Chain Monte Carlo}
 \includegraphics[scale=.4]{img/mcmc.png}
@@ -1026,6 +1027,84 @@ Let $z_t$ be the state at time $t$ and $h_Z(\cdot)$ be a proposed conditional di
 	\item Repeat 2-4 for all variables.
 \end{enumerate}
 \nb The general idea is to sample each variable in turn.
+
+\remarkk{Summary - Stochastic Inference}
+\begin{enumerate}
+	\item Hard to know how well we are doing.
+	\item Usually slow.
+\end{enumerate}
+
+\section{Deterministic Approximative Inference}
+
+\remark{Motivation}
+Can we reformulate the problem of infering an intractable conditional distribution $\prob(y|\x)$ as an optimisation problem?\\
+We want to find an approximate model, $q_\theta(\x)$, which is approximately equal to this conditional distribution where $\theta$ are parameters we tune. Not that $q_\theta(\x)$ is independent of $y$.\\
+
+\theoremm{Jensen's Inequality}
+The function of the expected value is a lower bound to the expected value of the function.
+\[\begin{array}{rcl}
+\expect[f(X)]&\geq&f(\expect(X))\\
+\displaystyle\int f(x)p(x)dx&\geq&f\left(\displaystyle\int xp(x)dx\right)
+\end{array}\]
+\nb Often we use this for $f(x)=\ln x$ as logs make many problems easier.\\
+
+\definition{Kullback-Leibler Divergence}
+\textit{Kullback-Leibler Divergence} measures the divergence between two distributions.\\
+It is not symmetric \& thus is not a metric
+$$KL(q(x)||p(x)):=\int q(x)\ln\dfrac{q(x)}{p(x)}dx$$
+
+\proposition{Features of Kullback-Leibler Divergence}
+Here are some features of values of Kullback-Leibler Divergence which are pertinant to this partical problem
+\begin{enumerate}
+	\item $KL(q(x)||p(x|y))=0\Longleftrightarrow q(x)=p(x|y)$.
+	\item $KL(q(x)||p(x|y))\geq0$.
+\end{enumerate}
+
+\prooff{$KL(q(x)||p(x|y))=0\Longleftrightarrow q(x)=p(x|y)$}
+\[\begin{array}{rcl}
+KL(q(x)||p(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
+&&\text{Assume\ }q(x)=p(x|y)\\
+&=&\displaystyle\int p(x|y)\ln\dfrac{p(x|y)}{p(x|y)}dx\\
+&=&\displaystyle\int p(x|y)\ln1dx\\
+&=&\displaystyle\int p(x|y)\times0dx\\
+&=&0
+\end{array}\]
+
+\prooff{$KL(q(x)||p(x|y))\geq0$}
+\[\begin{array}{rcl}
+KL(q(x)||q(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
+&=&-\displaystyle\int q(x)\ln\dfrac{p(x|y)}{q(x)}dx\\
+&\geq&-\ln\displaystyle\int p(x|y)dx\text{ by Jensen's Inequality}\\
+&=&-\ln 1\\
+&=&0
+\end{array}\]
+
+\proposition{Variational Bayes}
+Let $p(x)$ be an intractable distribution we are trying to approximate\& $q(x)$ be a distribution which we choose (and thus is tractable)
+\[\begin{array}{rcl}
+\ln p(y)&=&\ln p(y)+\displaystyle\int\dfrac{p(x|y)}{p(x|y)}dx\\
+&=&\displaystyle\int q(x)\ln p(y)dx+\displaystyle\int q(x)\ln\dfrac{p(x|y)}{p(x|y)}dx\\
+&=&\displaystyle\int q(x)\ln\dfrac{p(x|y)p(y)}{p(x|y)}dx\\
+&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx+\displaystyle\int q(x)\ln\dfrac{1}{p(x|y)}dx\\
+&=&\displaystyle\int q(x)\ln\dfrac{1}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx+\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx
+\end{array}\]
+By \textbf{Proposition 13.1 ii)} we have the last term is $\geq 0$.\\
+Consider the first two terms
+\[\begin{array}{rcl}
+\displaystyle\int q(x)\ln\dfrac{1}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx&=&\displaystyle\int q(x)\ln\dfrac{p(x,y)}{q(x)}dx\\
+&&\text{Assume }q(x)=p(x|y)\\
+&=&\displaystyle\int p(x|y)\ln\dfrac{p(x,y)}{p(x|y)}dx\\
+&=&\displaystyle\int p(x|y)\ln\dfrac{p(x|y)p(y)}{p(x|y)}dx\\
+&=&\displaystyle\int p(x|y)\ln\dfrac{p(x,y)}{p(x|y)}dx+\displaystyle\int p(x|y)\ln p(y)dx\\
+&=&\displaystyle\int p(x|y)\ln p(y)dx\\
+&=&\ln p(y)
+\end{array}\]
+Putting this together we find a lower bound for the evidence (ELBO=Evidence Lower BOund).
+$$\ln p(y)\geq-\int q(x)\ln q(x)dx+\int q(x)\ln p(x,y)dx$$
+Note that this bound is tight when $q(x)=p(x|y)$, or is close to. Making our optimisation problem be to make this bound as tight as possible. This is equivalent to minimsing $KL(q(x)||p(x|y))$.\\
+
+\proposition{Mean Field Variational Bayes}
+TODO
 
 \newpage
 \setcounter{section}{-1}
