@@ -929,6 +929,14 @@ TODO - Read book on this
 
 \section{Approximative Inference}
 
+\remark{Motivation}
+Suppose we are trying to implement a model which depends on a distribution $p(x)$, but that $p(x)$ is intractable. We need to consider ways to inferring the distribution of $p(x)$. The technique we use for this depends on the scenarion. There are three main groups of techniques
+\begin{enumerate}
+	\item Sampling.
+	\item Laplace Approximation
+	\item Variational Inference
+\end{enumerate}
+
 \definition{Markov Random Field}
 A \textit{Markov Random Field} is a graph of random variables where edges show dependency between random variables.\\
 Images can be considered as \textit{Markov Random Fields} as adjacent pixels depend upon each other.\\
@@ -1037,8 +1045,20 @@ Let $z_t$ be the state at time $t$ and $h_Z(\cdot)$ be a proposed conditional di
 \section{Deterministic Approximative Inference}
 
 \remark{Motivation}
-Can we reformulate the problem of infering an intractable conditional distribution $\prob(y|\x)$ as an optimisation problem?\\
+Can we reformulate the problem of infering an intractable conditional distribution $\prob(y|\x)$ as an \textit{optimisation} problem?\\
 We want to find an approximate model, $q_\theta(\x)$, which is approximately equal to this conditional distribution where $\theta$ are parameters we tune. Not that $q_\theta(\x)$ is independent of $y$.\\
+
+\remark{What is actually intractable?}
+Suppose that we want to model the distribution $p(y)$ but it is intractable.\\
+We have from \textit{Bayes' Theorem} that
+$$p(y)=\dfrac{p(y|x)p(x)}{p(x|y)}$$
+Both $p(y|x)$ and $p(x)$ are known thus $p(x|y)$ is intractable.\\
+This means the problem of approximating $p(y)$ is equivalent to approximating $p(x|y)$ and this is the problem we try to solve using \textit{Variational Bayes}.\\
+\nb Since $p(y)$ is intractable it is impossible to derive a mathematical definition for it, thus our answer will always be wrong.\\
+
+\remark{Scenario}
+Suppose we are given a set of data $\{y_i\}$ where $y_i\in\{0,1\}$ and each value represents the value of a pixel in a monochromatic image. Images however are noisy and thus $y_i$ is just a realisation of an underlying value for pixel $i$ where the true value is $x_i$. Consider the task where we want to infer the true value of $x_i$ from $\{y_i\}$.\\
+\nb The distribution in this case is intracable thus we must use inference.\\
 
 \theoremm{Jensen's Inequality}
 The function of the expected value is a lower bound to the expected value of the function.
@@ -1050,17 +1070,20 @@ The function of the expected value is a lower bound to the expected value of the
 
 \definition{Kullback-Leibler Divergence}
 \textit{Kullback-Leibler Divergence} measures the divergence between two distributions.\\
-It is not symmetric \& thus is not a metric
-$$KL(q(x)||p(x)):=\int q(x)\ln\dfrac{q(x)}{p(x)}dx$$
+It is not symmetric \& thus is not a metric.\\
+Let $p(X)$ and $q(X)$ be probability distributions we wish to compare. Then
+$$KL(q(X)||p(X)):=\int q(X)\ln\dfrac{q(X)}{p(X)}dX$$
+\nb The \textit{KL} measure requires that $q(X)$ \& $p(X)$ be zero-matching. \ie Whenever one of them equals 0 the other must too. This causes some limitations.\\
 
 \proposition{Features of Kullback-Leibler Divergence}
 Here are some features of values of Kullback-Leibler Divergence which are pertinant to this partical problem
 \begin{enumerate}
-	\item $KL(q(x)||p(x|y))=0\Longleftrightarrow q(x)=p(x|y)$.
-	\item $KL(q(x)||p(x|y))\geq0$.
+	\item $KL(q(x)||p(x))=0\Longleftrightarrow q(x)=p(x)$.
+	\item $KL(q(x)||p(x))\geq0$.
 \end{enumerate}
 
 \prooff{$KL(q(x)||p(x|y))=0\Longleftrightarrow q(x)=p(x|y)$}
+Let $p(x)$ \& $q(x)$ be two probability distributions.
 \[\begin{array}{rcl}
 KL(q(x)||p(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
 &&\text{Assume\ }q(x)=p(x|y)\\
@@ -1071,41 +1094,141 @@ KL(q(x)||p(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
 \end{array}\]
 
 \prooff{$KL(q(x)||p(x|y))\geq0$}
+Let $p(x)$ \& $q(x)$ be two probability distributions.
 \[\begin{array}{rcl}
-KL(q(x)||q(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
+KL(q(x)||p(x|y))&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx\\
 &=&-\displaystyle\int q(x)\ln\dfrac{p(x|y)}{q(x)}dx\\
-&\geq&-\ln\displaystyle\int p(x|y)dx\text{ by Jensen's Inequality}\\
-&=&-\ln 1\\
-&=&0
+&=&-\displaystyle\int q(x)(\ln p(x|y)-\ln q(x))dx\\
+&=&-\displaystyle\int q(x)\ln p(x|y)dx+\displaystyle\int q(x)\ln q(x)dx\\
+&\geq&-\ln\displaystyle\int p(x|y)dx+\ln\displaystyle\int q(x)dx\text{ by Jensen's Inequality}\\
+&=&-\ln 1+\ln 1\\
+&=&0-0=0
 \end{array}\]
 
 \proposition{Variational Bayes}
-Let $p(x)$ be an intractable distribution we are trying to approximate\& $q(x)$ be a distribution which we choose (and thus is tractable)
+Let $p(\textbf{Y})$ be an intractable distribution we are trying to approximate\& $q(\X)$ be a distribution we are choosing (and thus is tractable).\\
+The idea is to choose $q(\X)$ st it is approximately equal to $p(\X)$.\\
+Thus
 \[\begin{array}{rcl}
-\ln p(y)&=&\ln p(y)+\displaystyle\int\dfrac{p(x|y)}{p(x|y)}dx\\
-&=&\displaystyle\int q(x)\ln p(y)dx+\displaystyle\int q(x)\ln\dfrac{p(x|y)}{p(x|y)}dx\\
-&=&\displaystyle\int q(x)\ln\dfrac{p(x|y)p(y)}{p(x|y)}dx\\
-&=&\displaystyle\int q(x)\ln\dfrac{q(x)}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx+\displaystyle\int q(x)\ln\dfrac{1}{p(x|y)}dx\\
-&=&\displaystyle\int q(x)\ln\dfrac{1}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx+\displaystyle\int q(x)\ln\dfrac{q(x)}{p(x|y)}dx
+\ln p(\textbf{Y})&=&\ln\left(\displaystyle\int p(\textbf{Y},\X)d\X\right)\text{ by definition of evidence}\\
+&=&\ln\left(\displaystyle\int p(\X|\textbf{Y})p(\textbf{Y})d\X\right)\\
+&=&\ln\left(\displaystyle\int\dfrac{q(\X)}{q(\X)} p(\X|\textbf{Y})p(\textbf{Y})d\X\right)\\
+&\geq&\displaystyle\int q(\X)\ln\left(\dfrac{p(\X|\textbf{Y})p(\textbf{Y})}{q(\X)}\right)d\X\text{ by Jensen's Inequality}\\
+&=&\displaystyle\int q(\X)\ln\dfrac{p(\X|\textbf{Y})}{q(\X)}d\X+\displaystyle\int q(\X)\ln p(\textbf{Y})d\X\text{ by log rules}\\
+&=&\displaystyle\int q(\X)\ln\dfrac{p(\X|\textbf{Y})}{q(\X)}d\X+\displaystyle\underbrace{\int q(\X)d\X}_{=1}\ln p(\textbf{Y})\\
+&=&-KL(q(\X)||p(\X|\textbf{Y}))+\ln p(\textbf{Y})\text{ by definition of KL}
 \end{array}\]
-By \textbf{Proposition 13.1 ii)} we have the last term is $\geq 0$.\\
-Consider the first two terms
+Consider the \textit{Kullback-Leibler Divergence} element of this derivation as this is the term we are seeking to minimise (\ie make as close to zero as possible).
+\[\begin{array}{rrl}
+KL(q(\X)||p(\X|\textbf{Y}))&:=&\displaystyle\int q(\X)\ln\left(\dfrac{q(\X)}{p(\X|\textbf{Y})}\right)d\X\\
+&=&\displaystyle\int q(\X)\ln\left(\dfrac{q(\X)p(\textbf{Y})}{p(\X,\textbf{Y})}\right)d\X\text{ by definition of joint distribution}\\
+&=&\displaystyle\int q(\X)\ln q(\X)d\X-\displaystyle\int q(\X)\ln p(\X,\textbf{Y})d\X+\displaystyle\int q(\X)\ln p(\textbf{Y})d\X\text{ by log rules}\\
+&=&H(q(\X))-\expect_{q(\x)}[\ln p(\X,\textbf{Y})]+\underbrace{\displaystyle\int q(\X)d\X}_{=1}\ln p(\textbf{Y})\\
+&=&H(q(\X))-\expect_{q(\x)}[\ln p(\X,\textbf{Y})]+\ln p(\textbf{Y})\text{ by definitions}\\
+\implies\ln(\textbf{Y})&=&KL(q(\X)||p(\X,\textbf{Y}))+\underbrace{\expect_{q(\X)}[\ln p(\X,\textbf{Y})-H(q(\X))}_\text{Evidence Lower Bound}\text{ by rearrangement}\\
+&\geq&\expect_{q(\X)}[\ln p(\X,\textbf{Y})]-H(q(\X))\text{ since }KL(\cdot||\cdot)\geq0\\
+&=:&L(q(\X))
+\end{array}\]
+We have now derived a likelihood function, $L(q(\X))$, for our proposed approximate-distribution which we seek to maximise.\\
+Note the following are valid expressions of our likelihood function
+$$L(q(\X)):=\expect_{q(\x)}[\ln p(\X,\textbf{Y})]-H(q(\X))=\int q(\X)\ln\dfrac{p(\textbf{Y},\X)}{q(\X)}d\X\text{ by log rules}$$
+\nb Maximising $L(q(\X))$ is equivalent to minimising $KL(q(\X)||p(\X,\textbf{Y}))$ which in turns implies $q(\X)$ and $p(\X,\textbf{Y})$ are very similar, as desired.
+
+\subsection{Mean Field Approximation}
+
+\remark{Motivation}
+Now we have managed to redefine the inference problem as an optimisation problem we need to consider possible distributions for $q(\X)$ which we can then test. \textit{Mean Field Approximation} assumes that each data point is independent and update the distribution of each point over a series of cycles.
+$$q(\X):=\prod_iq_i(X_i)$$
+
+\proposition{Mean Field Approximation}
+Consider the likelihood function for \textit{variational inference} derived in \textbf{Proposition 13.2} and the definition of $q(\X)$ we are using
 \[\begin{array}{rcl}
-\displaystyle\int q(x)\ln\dfrac{1}{q(x)}dx+\displaystyle\int q(x)\ln p(x,y)dx&=&\displaystyle\int q(x)\ln\dfrac{p(x,y)}{q(x)}dx\\
-&&\text{Assume }q(x)=p(x|y)\\
-&=&\displaystyle\int p(x|y)\ln\dfrac{p(x,y)}{p(x|y)}dx\\
-&=&\displaystyle\int p(x|y)\ln\dfrac{p(x|y)p(y)}{p(x|y)}dx\\
-&=&\displaystyle\int p(x|y)\ln\dfrac{p(x,y)}{p(x|y)}dx+\displaystyle\int p(x|y)\ln p(y)dx\\
-&=&\displaystyle\int p(x|y)\ln p(y)dx\\
-&=&\ln p(y)
+L(q(\X))&=&\displaystyle\int q(\X)\ln\dfrac{p(\textbf{Y},\X)}{q(\X)}d\X\\
+&=&{\displaystyle\int\prod_iq_i(X_i)\ln\dfrac{p(\textbf{Y},\X)}{\prod_kq_k(X_k)}d\X}\\
+&=&{\displaystyle\int\prod_iq_i(X_i)\left(\ln p(\textbf{Y},\X)-\sum_k\ln q_k(X_k)\right)d\X}
 \end{array}\]
-Putting this together we find a lower bound for the evidence (ELBO=Evidence Lower BOund).
-$$\ln p(y)\geq-\int q(x)\ln q(x)dx+\int q(x)\ln p(x,y)dx$$
-Note that this bound is tight when $q(x)=p(x|y)$, or is close to. Making our optimisation problem be to make this bound as tight as possible. This is equivalent to minimsing $KL(q(x)||p(x|y))$.\\
+Since we want to update the distribution of each data point we note that our likelihood function can be rewritten as
+$$L(q)=L(q_j)+L(q_{\neg j})$$
+where $j$ is a data point we are interested in at this point in time.\\
+Thus we can derive the likelihood function for proposed distributions of this form
+\[\begin{array}{rcl}
+L(q)&=&{\displaystyle\int\prod_iq_i(X_i)\left(\ln p(\textbf{Y},\X)-\sum_k\ln q_k(X_k)\right)d\X}\\
+&=&{\displaystyle\int_j\int_{\neg j}q_j(X_j)\prod_{i\neq j}q_i(X_i)\left(\ln p(\textbf{Y},\X)-\sum_k\ln q_k(X_k)\right)d\X_{\neg j}dX_j}\\
+&=&{\displaystyle\int_jq_j(X_j)\underbrace{\int_{\neg j}\prod_{i\neq j}q_i(X_i)\ln p(\textbf{Y},\X)d\X_{\neg j}}_{=:\ln f_j(X_j)}dX_j}\\
+&-&{\displaystyle\int_jq_j(X_j)\int_{\neg j}\prod_{i\neq j}q_i(X_i)\left(\ln q_j(X_j)+\sum_{k\neq j}\ln q_k(X_k)\right)d\X_{\neq j}dX_j}\text{ by log rules \& def. of summation}\\
+&=&{\displaystyle\int_jq_j(X_j)\ln f_j(X_j)dX_j}-{\displaystyle\int_jq_j(X_j)\left(\ln q_j(X_j)\underbrace{\int_{\neg j}\prod_{i\neq j}q_i(X_i)d\X_{\neg j}}_{=1}+\underbrace{\int_{\neg j}\prod_{i\neq j}q_i(X_i)\sum_{k\neq j}\ln q_k(x_k)d\X_{\neg k}}_\text{constant wrt $q_j$}\right)}\\
+&=&{\displaystyle\int_jq_j(X_j)\ln f_j(X_j)dX_j-\int_jq_j(X_j)\ln q_j(X_j)dX_j+c\underbrace{\int_jq_j(X_j)dX_j}_{=1}}\\
+&=&{\displaystyle\int_jq_j(X_j)\ln\left(\dfrac{f_j(X_j)}{q_j(X_j)}\right)dX_j+c}\text{ by log rules}\\
+&=&-{\displaystyle\int_jq_j(X_j)\ln\left(\dfrac{q_j(X_j)}{f_j(X_j)}\right)dX_j+c}\\
+&=&-KL(q_j(X_j)||f_j(X_j))+c
+\end{array}\]
+Again our task is to minimise $KL(\cdot||\cdot)$. We know that $KL(\cdot||\cdot)\geq0$ the minimal value for $KL$ is 0 (the case where $q_j=f_j$).\\
+Since we are free to choose $q_j(X_j)$ we can simply equate it with $f_j(X_j)$.\\
+Consider the defintion of $f_j(X_j)$ from the previous derivation
+$$\ln f_j(X_j):=\int_{\neg j}\prod_{i\neq j}q_i(X_i)\ln p(\textbf{Y},\X)d\X_{\neg j}=\expect_{q_{\neg j}(X_{\neq j})}[\ln p(\textbf{Y},\X)]$$
+Thus we need to choose a distribution, $q_j(X_j)$, where the above expectation is tractable.\\
 
-\proposition{Mean Field Variational Bayes}
-TODO
-
+\proposition{Mean Field Approximation - Ising Model}
+Now we can consider possible distributions for $q_j(X_j)$.\\
+In the \textit{Ising Model} we define the following prior
+$$p(\X)=\frac{1}{Z_0}e^{\expect_0(X)}\text{ where }Z_0\text{ is a normalising term \& }\expect_0(\X)=\sum_{i=1}^N\sum_{j\in N_i}w_{ij}x_ix_j$$
+note that $N_i$ is the neighbourhood of the $i^\text{th}$ value, $w_{ij}$ is the weighting that $i$ gives the value of $x_j$ and $x_i,x_j\in\{-1,1\}$.\\
+Since $x_i,x_j\in\{-1,1\}$ we find that $e^{\expect_0(\X)}$ only grows if $x_i=x_j$ since that is the onlly case where $x_ix_j$ is positive.\\
+We definethe likelihood
+$$\prob(\textbf{Y}|\X)=\prod_ip(y_i|x_i)=\frac{1}{Z_1}\prod_ie^{L_i(x_i)}$$
+where $L_i$ gives a large value if it is likely that $x_i$ generated $y_i$.\\
+Now we make our assumptions about our proposed approximate-distribution $q(\X)$. We will assume that the distribution over each latent variable is independent
+$$q(\X)=\prod_i q_i(x_i,\mu_i)\text{ where }\expect_{q_i(X_i)}(X_i)=\mu_i$$
+We now need to get the joint distribution of this model
+\[\begin{array}{rcl}
+\ln p(\X,\textbf{Y})&=&\ln p(\textbf{Y}|\X)p(\X)\\
+&=&{\displaystyle\ln\left(\prod_ie^{L_i(x_i)}\dfrac{1}{Z_0}e^{\sum_{j\in N_i}w_{ij}x_ix_j}\right)}\\
+&=&{\displaystyle\sum_i\left(L_i(x_i)+\sum_{j\in N_i}w_{ij}x_ix_j\right)}+c\text{ by application of }\ln
+\end{array}\]
+We can now compute the expectation to get the approximative posterior
+\[\begin{array}{rcl}
+\ln q_i(x_i)&=&\ln f_i(x_i)\\
+&=&{\displaystyle\int\prod_{j\neq i}q_j(X_j)\ln p(\X,\textbf{Y})d\X_{\neg i}}\\
+&=&{\displaystyle\int\prod_{j\neq i}q_j(x_j)\left(L_i(x_i)+\sum_{k\in N_i}w_{ik}x_ix_k+c\right)d\X_{\neg i}}\text{ since we consider only one term}\\
+&=&{\displaystyle\int\underbrace{\prod_{j\neq i}q_j(x_j)d\X_{\neg i}}_{=1}L_i(x_i)+\int\prod_{j\neq i}q_j(x_j)\sum_{k\in N_i}w_{ik}x_ix_kd\X_{\neg i}+c}
+\end{array}\]
+Consider the second integral
+$$\int\prod_{j\neq i}q_j(x_j)\sum_{k\in N_i}w_{ik}x_ix_kd\X_{\neg i}=x_i\sum_{k\in N_i}w_{ik}\int\left(\prod_{j\neq i}q_j(x_j)\right)x_kd\X_{\neg i}$$
+Consider expanding this integration over each term
+\[\begin{array}{rcl}
+{\displaystyle x_i\sum_{k\in N_i}w_{ik}\int\left(\prod_{j\neq i}q_j(x_j)\right)x_kd\X_{\neg i}}&=&{\displaystyle x_i\sum_{k\in N_i}w_{ik}\int[q_1(x_1)\times\dots\times q_N(x_N)]x_kdX_1\dots dX_N}\\
+&=&{\displaystyle x_i\sum_{k\in N_i}w_{ik}\underbrace{\int q_1(x_1)dX_1}_{=1}\dots\int q_k(x_l)x_kdX_k\dots\underbrace{\int q_N(x_N)dX_N}_{=1}}\\
+&=&{\displaystyle x_i\sum_{k\in N_i}w_{ik}\int q_k(x_k)dX_k}\\
+&=&{\displaystyle x_i\sum_{k\in N_i}w_{ik}\expect_{q_k(x_k)}[X_k]}\\
+&=&{\displaystyle x_i\sum_{k\in N_i}w_{ik}\mu_k}
+\end{array}\]
+Substituting this into the first set of integrals
+$$\ln q_i(x_i)=\ln f_i(x_i)=L_i(x_i)+x_i\underbrace{\sum_{k\in N_i}w_{ik}\mu_k}_{=:m_i}+C=L_i(x_i)+x_im_i+C$$
+This means that
+$$q(\X)\propto\prod_ie^{L_i(x_i)+x_im_i}$$
+We need to ensure this definition of $q(\X)$ is an actual distribution (\ie it integrates to 1).\\
+Since we have that $x_i\in\{1,-1\}$ only we can solve this easily
+\[\begin{array}{rcl}
+\hat{q}_(x_i=1)&=&\dfrac{q(x_i=1)}{q(x_i=1)+q(x_i=-1)}\\
+&=&\dfrac{e^{m_i+L_i(1)}}{e^{m_i+L_i(1)}+e^{-m_i+L_i(-1}}\\
+&=&\dfrac{1}{1+e^{-2m_i-L_i(1)+L_i(-1)}}\\
+&=&\dfrac{1}{1+e^{-2\underbrace{\left(m_i+\frac{1}{2}L_i(1)-\frac{1}{2}L_i(-1)\right)}_{=:a_i}}}\\
+&=&\dfrac{1}{1+e^{-2a_i}}\\
+&=&\text{Sigmoid}(2a_i)\\
+\implies q_i(x_i=-1)&=&\text{Sigmoid}(-2a_i)
+\end{array}\]
+Thus our proposed $q(\cdot)$ is a distribution.\\
+We now need to consider how to undate $\mu_i$
+\[\begin{array}{rcl}
+\mu_i&=&\expect_{q_i(x_i)}[x_i]\\
+&=&{\displaystyle\sum_{x_i\in[1,-1]}x_iq_i(x_i)}\\
+&=&1\times q_i(x_i=1)+(-1)\times q_i(x_i=-1)\\
+&=&\dfrac{1}{1+e^{-2a_i}}-\dfrac{1}{1+e^{2a_i}}\\
+&=&\dfrac{e^{a_i}-e^{-a_i}}{e^{a_i}+e^{-a_i}}\\
+&=&\tanh(a_i)\\
+&=&\tanh\left(m_i+\frac{1}{2}[L_i(1)-L_i(-1)]\right)
+\end{array}\]
+Note that $\tanh$ is similar in shape to a sigmoid but runs between $-1$ \& $1$ rather than $0$ \& $1$.\\
 \newpage
 \setcounter{section}{-1}
 \section{Appendix}
