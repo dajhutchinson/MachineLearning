@@ -320,6 +320,19 @@ Since $\textbf{z}$ is zero-valued in all bar one dimension
 &p(\x,\textbf{z})&=&p(\x|\textbf{z})p(\textbf{z})\\
 &&=&{\displaystyle\prod_{i=1}^K\pi_i^{z_i}}\text{Normal}(\x|\pmb\mu_i,\pmb\Sigma_i)^{z_i}
 \end{array}\]
+\nb $\textbf{z}$ represents the cluster that a data point belongs to.\\
+
+\proposition{Fitting a Gaussian Mixtures Model}
+Consider wishing to fit $K$ $D$-dimensional components where $\textbf{Y}_k\sim\text{Normal}(\pmb\mu_k,\Sigma_k)$ for data points $\{\x_1,\dots,\x_n\}$.\\
+(In this case we the covariance matrices are diagonal).
+\begin{enumerate}
+	\item $\forall\ k\in[1,K]$ random initalise $\textbf{Y}_k$.
+	\item $\forall\ i\in[1,n]$ associate $\x_i$ to component $k$ where $\prob(\pmb\mu=\pmb\mu_k,\Sigma=\Sigma_k|\x_i)$ is greatest.
+	\item $\forall\ k\in[1,K],\ d\in[1,D]$ set ${\displaystyle\mu_{k,d}=\frac1{n_k}\sum_{c_i=k}x_{i,d}}$ and ${\displaystyle\Sigma_{k,dd}=\frac{1}{n_k}\sum_{c_i=k}(x_{i,d}-\mu_{k,d})^2}$.\\
+	where $n_k$ is the number of data points assigned to component $k$.
+	\item Repeat until convergence of $\textbf{Y}_1,\dots,\textbf{Y}_K$.
+\end{enumerate}
+\nb These are the sample mean \& covariance. $\pmb\mu\in\reals^{D},\ \Sigma\in\reals^{D\times D}$.
 
 \section{Probability}
 
@@ -537,10 +550,15 @@ A \textit{Stochastic Process} is a collection of random variables, all defined i
 
 \subsubsection{Gaussian Processes}
 
-\definition{Gaussian Processes}
-\textit{Gaussian Processes} are the family of \textit{Stochastic Processes} where each finite collection of the random variables has a \textit{Multivariate Normal Distribution}. The distribution of a \textit{Gaussian Process} is the continuous joint distribution of the random variables which make it up.\\
+\definition{Gaussian Process}
+Let $S$ be a set.\\
+A \textit{Gaussian Process} on $S$ is a set of random variables $\{Z_t\}_{t\in S}$ such that $\forall\ n\in\nats,\ \forall\ t_1,\dots,t_n\in S$ the vector $\{Z_{t_1},\dots,Z_{t_n}\}$ is a \textit{Multivariate Gaussian}.\\
+The distribution of a \textit{Gaussian Process} is the continuous joint distribution of the random variables which make it up.\\
 For a \textit{Gaussian Process} we define functions for calculating the mean, $\mu(\cdot)$, \& covariance, $k(\cdot,\cdot)$. These functions only depend on the training data \& a few hard-coded parameters thus \textit{Gaussian Processes} are a \underline{non}-parametric.\\
-\nb There may be infinitely many random variables in a given collection.\\
+\nb \textit{Covariance Functions} are \textit{Kernels}.\\
+
+\remark{Verbose Definition of Gaussian Processes}
+\textit{Gaussian Processes} are the family of \textit{Stochastic Processes} where each finite collection of the random variables has a \textit{Multivariate Normal Distribution}.\\
 
 \remark{Gaussian Processes is the infinite dimensional generalisation of a Gaussian Distribution}
 
@@ -571,10 +589,13 @@ $$\x'=\x-\bar{\x}$$
 \subsubsection{Dirichlet Processes}
 
 \definition{Dirichlet Processes}
-\textit{Dirichlet Processes} are the family of \textit{Stochastic Processes} whose realisations are probability distributions in their own right (\ie The family of \textit{Stochastic Processes} which when sampled from return a probability distribution).\\
+\textit{Dirichlet Processes} are the family of \textit{Stochastic Processes} whose realisations are probability distributions over a set $S$.\\
 The \textit{Dirichlet Process} is a prior over countable infinite sets and used to generate a partitioning of a, possibly, infinite number of data points (Clusters).
 \textit{Dirichlet Processes} are hard to define explicitly \& here shall be defined constructively.\\
-\nb \textit{Dirichlet Processes} are \underline{non}-parametric.\\
+\nb \textit{Dirichlet Processes} are distributions over distributions over a set $S$.\\
+
+\remark{Dirichlet Processes Parameters}
+\textit{Dirichlet Processes} are parameterised by a \textit{base distribution}, $f(\cdot)$, ${\text{and a \textit{concentration parameter}}, \alpha}$.\\
 
 \remark{Dirichlet Processes are the infinite dimensional generalisation of a Dirichlet Distribution}
 
@@ -586,12 +607,20 @@ Consider having an infinite number of tables (clusters) \& dishes (labels for cl
 We allow any number of customers to sit at a table, but only ever allow one dish per table.\\
 \textit{We consider how to distribute customers between tables.}\\
 When a new customer arrives, the probability that they start a new table is
-$$\frac\alpha{N-\alpha-1}$$
+$$\frac\alpha{N+\alpha-1}$$
 where $\alpha$ is a senstivity parameter that we set \& $N$ is the number of customers already in the restaurant.\\
 If the customer chooses to not start a new table then they sit at table $i$ with probabiltiy
 $$\frac{n_i}N$$
 where $n_i$ is the number of customers already at table $i$ \& $N$ is the number of customers already in the restaurant.\\
 By varying $\alpha$ we can perform simulations to determine how any tables are used \& how many people sit at each one.\\
+Joining a new table is applied as sampling from the given distribution $f(\cdot)$ and joining an exisiting table is applied as sampling the value which formed the table.\\
+
+\proposition{Formulation of Dirichlet Processes - Stick Breaking}
+Consider taking a sample $\{x_1,x_2\dots\}$ from $\text{Beta}(1,\alpha)$ ($x_i\in[0,1]\ \forall\ i$).\\
+Imagine having a stick. Each of these sampled values tells you what proporition of the remaining stick to break off.\\
+Thus after $n$ samples $C_n:=x_n\prod_{i=1}^{n-1}x_i$ of the stick remains. Each portion can be considered a cluster.\\
+Take a sample $\{z_1,z_2,\dots\}$ from the given distribution $f(\cdot)$.\\
+Merge the sample to form a new distribution $g(z)=\sum_{k\in\nats}C_k\delta_{z_k,z}$.\\
 
 \definition{Latent Dirichlet Allocation}
 \textit{Latent Dirichlet Allocation}, LDA, is a \textit{Generative Model} used in natural language processing to find topics within a document. To do so, it makes the following assumptions
@@ -601,6 +630,26 @@ By varying $\alpha$ we can perform simulations to determine how any tables are u
 	\item The order of words is irrelevant.
 \end{enumerate}
 \nb Based on the premise that certain data types can be well explained by atomic units with them.\\
+
+\propositionn{LDA Process}
+\begin{enumerate}[label=\arabic*)]
+	\item Assign each word in each document to a random topic.
+	\item For each document, $d$
+	\begin{enumerate}
+		\item For each word, $w$, with current topic assignment $t$.
+		\begin{enumerate}
+			\item Assume all topic assignments are correct, except for the word currently being considered.
+			\item Calculate two propotions
+			\begin{itemize}
+				\item[-] Proporition of words in $d$ that are currentlty assign to $t$. $$p(\text{Topic}=t|\text{Document}=d)$$
+				\item[-] Proportion of occurences of $w$ (across all documents) \text{which are assigned to $t$.} $$p(\text{Word}=w|\text{Topic}=t)$$
+			\end{itemize}
+			\item Multiply the two proportions and assign $w$ to a new topic based on the resulting probability.
+			$$p(\text{Topic}=t|\text{Document}=d)\times p(\text{Word}=w|\text{Topic}=t)$$
+		\end{enumerate}
+	\end{enumerate}
+	\item Repeat until convergence.
+\end{enumerate}
 
 \proposition{Latent Dirichlet Allocation - Topic Model}
 Let $\{\beta_1,\dots,\beta_T\}$ be the characteristic distribution of words for each possible topic and $w_{d,i}$ be the $i^\text{th}$ word in the $d^\text{th}$ document.\\
@@ -943,7 +992,18 @@ Define $\mathcal{D}:=\{\x,\textbf{y}\}$ be the points we have evaluated $f$ at, 
 	\item Deterministic - Based on making analytical approximations to the posterior distribution (\eg assuming that it factorises in a particular way) and as such will could never produce an exact result.\\
 	\eg Variational Inference, Variational Bayes, Laplace Approximation
 \end{enumerate}
-\nb The strengths \& weaknesses of \textit{Stochastic} and \textit{Deterministic} techniques are complementary.
+\nb The strengths \& weaknesses of \textit{Stochastic} and \textit{Deterministic} techniques are complementary.\\
+
+\definition{Monte Carlo Methods}
+\textit{Monte Carlo Methods} are a set of methods which use sampling to make numerical estimations of parameters in a distribution.\\
+\textit{Monte Carlo Methods} follow the following steps
+\begin{enumerate}
+	\item Determine how to sample inputs.
+	\item Generate many sets of possible inputs
+	\item Perform a deterministic calculation with these sets.
+	\item Analyse the result statistically.
+\end{enumerate}
+\nb The error of the result typically decreases as $\frac{1}{\sqrt{N}}$.
 
 \subsection{Stochastic Techniques}
 
@@ -971,10 +1031,10 @@ $$f(x)=e^{Mp(x)}$$
 Suppose $x'$ is the \textit{mode} of $p(\cdot)$ and consider the ratio of $f(\cdot)$.
 $$\frac{f(x')}{f(x)}=e^{M[f(x')-f(x)]}$$
 We notice that this ratio grows significantly \textit{only} when $x$ is in the neighbourhood of $x'$.\\
-Thus we can estimate the \textit{mode}, $x'$, by finding the points of greatest growth.
+Thus we can estimate the \textit{mode}, $x'$, by finding the points of greatest growth.\\
 
 \remark{Limitations of Laplace Approximation}
-No good for distributions with multiple global maxima or are assymetric.\\
+No good for distributions with multiple global maxima or are assymetric.
 
 \subsection{Sampling Techniques}
 
@@ -1022,11 +1082,14 @@ Let $p(\cdot)$ be the distribution which we wish to sample from.
 \end{itemize}
 
 \definition{Importance Sampling}
-\textit{Importance Sampling} is a technique for generating observations from a distribution.\\
+\textit{Importance Sampling} is a technique for approximating the \textit{Expected Value} of a distribution.\\
 Suppose we wish to calcualte an expectation of $f(\cdot)$ wrt probability distribution $p(\cdot)$.\\
-We have
+Chose a tractable distribution $q(\cdot)$ st $q(x)=0\implies p(x)=0$. Then we make the following approximation
+$$\displaystyle{\expect[f(x)]\approx\frac{1}{N}\sum_{i=1}^Nf(x_i)\frac{p(x_i)}{q(x_i)}}$$
+where $\{x_1,\dots,x_N\}$ is a sample from $q(x)$.\\
+
+\prooff{Definition 5.7}
 $$\displaystyle{\expect[f(x)]:=\int_\mathcal{X} f(x)p(x)dx=\int_\mathcal{X} f(x)\frac{q(x)}{q(x)}p(x)dx=\int_\mathcal{X} f(x)\frac{p(x)}{q(x)}q(x)dx=\expect_{q(\cdot)}\left[f(x)\frac{p(x)}{q(x)}\right]\approx\frac{1}{N}\sum_{i=1}^Nf(x_i)\frac{p(x_i)}{q(x_i)}}$$
-where $q(x)$ is a distribution we can sample from and $\{x_1,\dots,x_N\}$ is a sample from $q(x)$.\\
 
 \remarkk{Comments on Importance Sampling}
 \begin{itemize}
@@ -1209,12 +1272,14 @@ Depending on the task we may wish to adjust how we measure \textit{Optimal Behav
 	$$\lim_{T\to\infty}\expect\left(\frac1T\sum_{t=0}^Hr_t\right)$$
 \end{enumerate}
 
-
-
+\newpage
+\setcounter{section}{-1}
 \section{Reference}
 
 \remark{Useful Links}
 \textit{https://katbailey.github.io/post/gaussian-processes-for-dummies/}\\
+\textit{https://www.quora.com/What-is-the-difference-between-backpropagation-and-gradient-descent-when-training}\\\textit{-a-deep-learning-neural-network-Which-of-the-two-is-Tensorflow-using}\\
+\textit{https://www.youtube.com/watch?v=0NMC2NfJGqo}\\
 
 \remark{Interpretting a data set}
 Let $\X$ be a matrix which represents a set of data.\\
@@ -1264,6 +1329,28 @@ where $Z_0$ is a normalising factor \& $E_0(\cdot)$ is a function that is learge
 In scenarios where $x_i\in\{-1,1\}\ \forall\ i$ a good definition for $E_0(\cdot)$ is
 $$E_0(\x)=\sum_{i=1}^N\sum_{j\in\mathcal{N}_i}w_{ij}x_ix_j$$
 where $\mathcal{N}_i$ is the neighbourhood of $x_i$ and $w_{ij}$ is the weight that $i$ gives the values of $x_j$, as it is only positive when $x_i=x_j$.\\
+
+\definition{Gradient Descent}
+\textit{Gradient Descent} is an \underline{iterative} \textit{optimisaiton algorithm} which aims to find the local minimum of a function, and thus the parameters which produce it.\\
+\textit{Gradient Descent} can be used in scenarios where a function is intractable, which \textit{Least Squares} \underline{cannot}.
+\begin{enumerate}
+	\item Set $t=0$.
+	\item Randomly initalise parameter values, $\theta_t$.
+	\item Repeat until convergence of $\theta_t$.
+	\begin{enumerate}
+		\item Evaluate the performance of this state using a \textit{Loss Function}, $L(\x,\theta_t)$.
+		\item Find the derivative of the \textit{Loss Function} wrt the parameters, $\frac{d}{d\theta}L(\x,\theta)$.
+		\item Evaluate the derivative for the parmater values we just tested, $z$.
+		\item Calculate \textit{Step Size} $s:=z\times\alpha$, where $\alpha$ is the \textit{Learning Rate} $(\approx 0.1)$.
+		\item Set $\theta_{t+1}=\theta_t-s$.
+	\end{enumerate}
+\end{enumerate}
+\nb \textit{Sum of the Squared Residuals} is a good loss function, $L(\x,\theta):=\sum_i[o_i-e_i]^2$ where $o_i$ is the observed value \& $e_i$ is the predict value at a given point.\\
+
+\definition{Eigenvalues \& Eigenvectors}
+\textit{Eigenvalues} \& \textit{Eigenvectors} are properties of square matrices. For a square matrix $A\in M(\reals)_n$, $\lambda\in\reals$ \& $\pmb{v}\in\reals^n$ is an \textit{Eigenvalue} \& \textit{Eigenvector} pair of $A$ if
+$$A\pmb{v}=\lambda\pmb{v}$$
+\nb Solving $|A-\lambda I|=0$ produces in the eigenvalues of $A$, from which the eigenvectors can be found.\\
 
 \subsection{Graphical Models}
 
