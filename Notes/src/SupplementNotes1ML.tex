@@ -83,18 +83,18 @@
 \textit{Variational Bayes} is a method for approximating an intractable integral, $P$, with a tractable one, $Q$. This is useful as \textit{Posterior}s are integrals and generally intractable.
 $$P(X|Y)\approx Q(X)$$
 From the derivation below we get that
-$$\ln P(Y)=KL(Q\|P)-\expect_X[\ln Q(X)-\ln P(X,Y)$$
+$$\ln P(Y)=KL(Q\|P)-\expect_X[\ln Q(X)-\ln P(X,Y)]$$
 since $\ln P(Y)$ is fixed wrt $Q$ we can derive a likelihood function
 $$\mathcal{L}(Q)=-\expect_X[\ln Q(X)-\ln P(X,Y)]$$
 If we maximise this likelihood function, $\mathcal{L}$, then we are minimising $KL(Q||P)$ which means $Q$ \& $P$ are becoming similar.\\
-We have reduced the problem of approximation to just optimising $\mathcal{L}(Q)$.\\
-By choosein g a good form for $Q$ $\mathcal{L}(Q)$ becomes tractable.
+We have reduced the problem of approximation to just maximising $\mathcal{L}(Q)$.\\
+By choosing a good form for $Q$ means $\mathcal{L}(Q)$ becomes tractable.
 
 \subsection{Kullback-Leibler Divergence}
 \textit{Kullback-Leibler Divergence} is a similarity measure for two distributions, $Q\ \&\ P$.
 $$KL(Q||P):=\int Q(X)\ln\left(\frac{Q(X)}{P(X|Y)}\right)dX$$
-The lower the value of $KL(Q||P)$ the similar $Q$ \& $P$ are.\\
-\nb $KL(\cdot||\cdot)\geq 0$ and $KL(Q||Q)=1$.
+The lower the value of $KL(Q||P)$ the greater the similarity of $Q$ \& $P$.\\
+\nb $KL(\cdot||\cdot)\geq 0$ and $KL(Q||Q)=0$.
 
 \subsection{Intractibiltiy}
 Here I show why the \textit{Posterior} is intractrable
@@ -104,12 +104,29 @@ This makes the evidence, and thus posterior, intractable.
 
 \subsection{Derivation}
 \[\begin{array}{rcl}
-KL(Q||P)&=&\displaystyle\sum_X Q(X)\ln\left[\dfrac{Q(X)}{P(X|Y)}\right]\\
+KL(Q||P)&\approx&\displaystyle\sum_X Q(X)\ln\left[\dfrac{Q(X)}{P(X|Y)}\right]\\
 &=&\displaystyle\sum_X Q(X)\ln\left[\dfrac{Q(X)P(X)}{P(X,Y)}\right]\text{ by product rule}\\
 &=&\displaystyle\sum_XQ(X)[\ln Q(X)+\ln P(Y)-\ln P(X,Y)]\text{ by log rules}\\
 &=&\expect_X[\ln Q(X)-\ln P(X,Y)]+\ln P(Y)\text{ since }P(Y)\text{ is independent of X}\\
-\implies\ln P(Y)&=&KL(Q||P)-\underbrace{\expect_X[\ln Q(X)-\ln P(X,Y)]}_{\mathcal{L}(Q)}
+\implies\ln P(Y)&=&KL(Q||P)-\underbrace{\expect_X[\ln Q(X)-\ln P(X,Y)]}_{\mathcal{L}(Q)}\text{ by rearrangement}
 \end{array}\]
+
+\subsection{Mean Field Variational Bayes - Ising Model}
+Here we make the  \textit{Mean Field Approximation}, that
+$$q(\X)=\prod_iq_i(x_i,\mu_i)\text{ where }\mu_i:=\expect_{q_i}(x_i)$$
+Since this is an \textit{Ising Model} we have posterior
+$$p(\textbf{Y}|\X)=\frac{1}{Z_1}\prod_ie^{L_i(x_i)}$$
+where $L_i(x_i)$ is a predefined function which gives a large value if it is likely $x_i$ generated $y_i$.\\
+By derivations, shown in \textit{Problem Sheet 9}, we produce the following process
+\begin{enumerate}
+	\item Randomly initialise all $\mu_i$.
+	\item For each $x_i$:
+	\begin{enumerate}
+		\item Set $\mu_i=\text{tanh}\left(m_i+\frac{1}{2}[L_i(1),L_i(-1)]\right)$\\
+		\text{where} $m_i:=\sum_{j\in\mathcal{N}_i}w_{ij}\mu_j^T$ and $\{1,-1\}$ are the two values the $x_i$ can take \text{(Ising Model)}.
+	\end{enumerate}
+	\item Repeat until time is up
+\end{enumerate}
 
 \section{Predicitive Gaussian Processes}
 \textit{Gaussian Processes} are the class of \textit{Stochastic Processes} st every finite linear combination of random variables is normally distributed.\\
@@ -126,12 +143,12 @@ Here I describe the process of make predictions for the value at a set of points
 \textbf{Without Noise}
 \[\begin{array}{rcl}
 \pmb\mu^*&=&k(X^*,X^*)k(X,X)^{-1}y\\
-\Sigma^*&=&k(X^*,X^*)-k*X^*,X)k(X,X)^{-1}k(X^*,X)^T
+\Sigma^*&=&k(X^*,X^*)-k(X^*,X)k(X,X)^{-1}k(X^*,X)^T
 \end{array}\]
 \textbf{With Noise}
 \[\begin{array}{rcl}
 \pmb\mu^*&=&k(X^*,X^*)k(X,X\pmb{+c})^{-1}y\\
-\Sigma^*&=&k(X^*,X^*)-k*X^*,X)k(X,X\pmb{+c})^{-1}k(X^*,X)^T
+\Sigma^*&=&k(X^*,X^*)-k(X^*,X)k(X,X\pmb{+c})^{-1}k(X^*,X)^T
 \end{array}\]
 The only difference is the $+c$ in the $K(X,X)$ terms.\\
 \nb $\pmb\mu^*\in\reals^N\ \&\ \Sigma^*\in\reals^{N\times N}$ where $N:=|X^*|$.
@@ -163,7 +180,7 @@ The following algorithm is used to construct a realisation
 	\item With probability $\dfrac{n_x}{\alpha+n-1}$ set $X_n=x$\\
 	 where $n_x:=|\{j<n:X_j=x\}|$ (\ie the number of previous observations of $x$).
 \end{enumerate}
-These $X_1,X_2,\dots$ represent the relative frequcies with which each value should occur in the distribution. In practice we cannot produce full distributions as that would require infinite iterations of the algorithm, instead we are just approximating it.\\
+These $X_1,X_2,\dots$ represent the relative frequencies with which each value should occur in the distribution. In practice we cannot produce full distributions as that would require infinite iterations of the algorithm, instead we are just approximating it.\\
 \nb $X_1,X_2,\dots$ are not independent since they depend on the previously generated results.\\
 \nb The base distribution, $f(\cdot)$, is the expected result.
 
@@ -215,4 +232,28 @@ Here is an algorithm for \textit{Gibbs Sampling}
 	\item Repeat ii) until time is up
 \end{enumerate}
 
+\section{Gradient Descent}
+\textit{Gradient Descent} is an iterative \textit{optimisaiton algorithm} which aims to find the local minimum of a function, and thus the parameters which produce it. \textit{Gradient Descent} can be used in scenarios where a function is intractable, where \textit{Least Squares} \underline{cannot}.\\
+\\
+Here is an algorithm for \textit{Gradient Descent}
+\begin{enumerate}
+	\item Set $t=0$.
+	\item Randomly initalise parameter values, $\theta_t$.
+	\item Repeat until convergence of $\theta_t$.
+	\begin{enumerate}
+		\item Evaluate the performance of this state using a \textit{Loss Function}, $L(\x,\theta_t)$.
+		\item Find the derivative of the \textit{Loss Function} wrt the parameters, $\frac{d}{d\theta}L(\x,\theta)$.
+		\item Evaluate the derivative for the parmater values we just tested, $z$.
+		\item Calculate \textit{Step Size} $s:=z\times\alpha$, where $\alpha$ is the \textit{Learning Rate} $(\approx 0.1)$.
+		\item Set $\theta_{t+1}=\theta_t-s$.
+	\end{enumerate}
+\end{enumerate}
+\nb \textit{Sum of the Squared Residuals} is a good loss function, $L(\x,\theta):=\sum_i[o_i-e_i]^2$ where $o_i$ is the observed value \& $e_i$ is the predict value at a given point.
+
+\section{Maximum a Posteriori Estimates}
+\textit{Maximum a Posteriori} are point estimates which maximise the \textit{Posterior} distribution.
+$$\hat\theta_\text{MAP}:=\text{argmax}_\theta P(\theta|\mathcal{D})$$
+\textit{MAP} Estimates are used to avoid overfitting but are not invariant reparameterisation.\\
+\nb $\hat\theta_\text{MAP}$ is not necessarily unique, similar to \textit{MLE}.\\
+\nb $\hat\theta_\text{MLE}:=\text{argmax}_\theta L(\theta|\mathcal{D})=\text{argmax}_\theta f(\mathcal{D}|\theta)$
 \end{document}
