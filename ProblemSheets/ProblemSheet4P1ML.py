@@ -2,6 +2,17 @@ import numpy as np
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 
+"""
+    DIFFERENT KERNELS
+    -----------------
+    These are used for the covariance function in Gaussian Processes
+
+    +-------+----------+
+    | RBF   | Linear   |
+    +-------+----------+
+    | White | Periodic |
+    +-------+----------+
+"""
 # mean function
 def mu(x_i):
     return np.zeros(x_i.shape)
@@ -26,7 +37,7 @@ def white_kernel(x_i,x_j,sigma2):
     if x_j is None:
         return sigma2*np.eye(x_i.shape[0])
     else:
-        return np.zeroes(x_i.shape[0],x_j.shape[0])
+        return sigma2*np.eye(x_i.shape[0],x_j.shape[0])
 
 def periodic_kernel(x_i,x_j,sigma2,period,ell):
     if x_j is None:
